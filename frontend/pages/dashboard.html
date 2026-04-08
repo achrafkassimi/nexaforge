@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaForge — Dashboard</title>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            align-items: flex-start;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--purple);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .logo-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 20px;
+            font-size: 14px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: var(--text);
+            background: rgba(139,92,246,0.06);
+        }
+
+        .nav-item.active {
+            color: var(--purple2);
+            background: rgba(139,92,246,0.1);
+            border-left-color: var(--purple);
+        }
+
+        .sidebar-bottom {
+            position: absolute;
+            bottom: 24px;
+            padding: 0 20px;
+            width: 240px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .user-name { font-size: 13px; font-weight: 500; }
+        .user-role { font-size: 11px; color: var(--muted); }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            padding: 32px;
+            min-height: 100vh;
+            background: var(--bg);
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .kpi-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .kpi-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            margin-top: 8px;
+            background: rgba(139,92,246,0.15);
+            color: var(--purple2);
+        }
+
+        /* SECTIONS */
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--text);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        /* PROJECTS TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 500;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(139,92,246,0.08);
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 100px;
+        }
+
+        .badge-active { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-draft  { background: rgba(148,144,181,0.15); color: var(--muted); }
+        .badge-review { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+        /* AGENTS */
+        .agent-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .agent-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .av-backend  { background: #1d4ed8; }
+        .av-frontend { background: #6d28d9; }
+        .av-database { background: #047857; }
+        .av-devops   { background: #b45309; }
+        .av-manager  { background: #9d174d; }
+
+        .agent-name { font-size: 13px; font-weight: 500; }
+        .agent-type { font-size: 11px; color: var(--muted); }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-left: auto;
+        }
+
+        .offline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            margin-left: auto;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        label { font-size: 12px; color: var(--muted); }
+
+        select {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 11px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-confirm {
+            flex: 1;
+            padding: 11px;
+            background: var(--purple);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .add-btn {
+            padding: 9px 18px;
+            background: var(--purple);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            width: auto;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">N</div>
+            <div class="logo-name">NexaForge</div>
+        </div>
+        <a class="nav-item active" href="dashboard.html">Dashboard</a>
+        <a class="nav-item" href="#">Projects</a>
+        <a class="nav-item" href="#">Agents</a>
+        <a class="nav-item" href="#">Users</a>
+        <a class="nav-item" href="#">Logs</a>
+        <a class="nav-item" href="#">Settings</a>
+        <div class="sidebar-bottom">
+            <div class="user-info">
+                <div class="user-avatar" id="avatar-initials">A</div>
+                <div>
+                    <div class="user-name" id="user-name">Loading...</div>
+                    <div class="user-role" id="user-role">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="page-title">Dashboard</div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-val" id="kpi-projects">—</div>
+                <div class="kpi-label">Active Projects</div>
+                <div class="kpi-badge">Total</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-val" id="kpi-agents">—</div>
+                <div class="kpi-label">Agents</div>
+                <div class="kpi-badge">Online</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-val" id="kpi-tasks">—</div>
+                <div class="kpi-label">Total Tasks</div>
+                <div class="kpi-badge">All sprints</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-val">Agile</div>
+                <div class="kpi-label">Methodology</div>
+                <div class="kpi-badge">Scrum</div>
+            </div>
+        </div>
+
+        <!-- PROJECTS + AGENTS -->
+        <div class="grid-2">
+
+            <!-- PROJECTS -->
+            <div class="card">
+                <div class="section-title">Projects</div>
+                <button class="add-btn" onclick="openModal('project')">+ New Project</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-list">
+                        <tr><td colspan="3" style="color:var(--muted)">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- AGENTS -->
+            <div class="card">
+                <div class="section-title">Agents</div>
+                <button class="add-btn" onclick="openModal('agent')">+ New Agent</button>
+                <div class="agent-list" id="agents-list">
+                    <div style="color:var(--muted);font-size:13px">Loading...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL PROJECT -->
+    <div class="modal-overlay" id="modal-project">
+        <div class="modal">
+            <div class="modal-title">Create Project</div>
+            <div class="form-group">
+                <label>Project Name</label>
+                <input type="text" id="p-name" placeholder="NexaForge Platform">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="p-desc" placeholder="Project description..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Priority</label>
+                <select id="p-priority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('project')">Cancel</button>
+                <button class="btn-confirm" onclick="createProject()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGENT -->
+    <div class="modal-overlay" id="modal-agent">
+        <div class="modal">
+            <div class="modal-title">Create Agent</div>
+            <div class="form-group">
+                <label>Agent Name</label>
+                <input type="text" id="a-name" placeholder="Atlas">
+            </div>
+            <div class="form-group">
+                <label>Agent Type</label>
+                <select id="a-type">
+                    <option value="backend">Backend</option>
+                    <option value="frontend">Frontend</option>
+                    <option value="database">Database</option>
+                    <option value="devops">DevOps</option>
+                    <option value="manager">Manager</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('agent')">Cancel</button>
+                <button class="btn-confirm" onclick="createAgent()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = "http://localhost:8000"
+        const token = localStorage.getItem('token')
+
+        if (!token) window.location.href = 'login.html'
+
+        // Decode JWT to get user info
+        function parseJWT(token) {
+            const base64 = token.split('.')[1]
+            return JSON.parse(atob(base64))
+        }
+
+        const payload = parseJWT(token)
+        document.getElementById('user-role').textContent = payload.role
+        document.getElementById('user-name').textContent = payload.role
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+
+        // Load data
+        async function loadProjects() {
+            const res = await fetch(`${API}/api/projects/`, { headers })
+            const data = await res.json()
+            document.getElementById('kpi-projects').textContent = data.length
+            const tbody = document.getElementById('projects-list')
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted)">No projects yet</td></tr>'
+                return
+            }
+            tbody.innerHTML = data.map(p => `
+                <tr>
+                    <td>${p.name}</td>
+                    <td><span class="badge badge-draft">${p.priority}</span></td>
+                    <td><span class="badge badge-${p.status === 'active' ? 'active' : 'draft'}">${p.status}</span></td>
+                </tr>
+            `).join('')
+        }
+
+        async function loadAgents() {
+            const res = await fetch(`${API}/api/agents/`, { headers })
+            const data = await res.json()
+            document.getElementById('kpi-agents').textContent = data.length
+            const list = document.getElementById('agents-list')
+            if (data.length === 0) {
+                list.innerHTML = '<div style="color:var(--muted);font-size:13px">No agents yet</div>'
+                return
+            }
+            list.innerHTML = data.map(a => `
+                <div class="agent-item">
+                    <div class="agent-avatar av-${a.agent_type}">${a.name.slice(0,2).toUpperCase()}</div>
+                    <div>
+                        <div class="agent-name">${a.name}</div>
+                        <div class="agent-type">${a.agent_type}</div>
+                    </div>
+                    <div class="${a.status === 'idle' ? 'online-dot' : 'offline-dot'}"></div>
+                </div>
+            `).join('')
+        }
+
+        async function loadTasks() {
+            const res = await fetch(`${API}/api/tasks/`, { headers })
+            const data = await res.json()
+            document.getElementById('kpi-tasks').textContent = data.length
+        }
+
+        // Modals
+        function openModal(type) {
+            document.getElementById('modal-' + type).classList.add('open')
+        }
+
+        function closeModal(type) {
+            document.getElementById('modal-' + type).classList.remove('open')
+        }
+
+        // Create project
+        async function createProject() {
+            const res = await fetch(`${API}/api/projects/`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: document.getElementById('p-name').value,
+                    description: document.getElementById('p-desc').value,
+                    priority: document.getElementById('p-priority').value
+                })
+            })
+            if (res.ok) {
+                closeModal('project')
+                loadProjects()
+            }
+        }
+
+        // Create agent
+        async function createAgent() {
+            const res = await fetch(`${API}/api/agents/`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: document.getElementById('a-name').value,
+                    agent_type: document.getElementById('a-type').value
+                })
+            })
+            if (res.ok) {
+                closeModal('agent')
+                loadAgents()
+            }
+        }
+
+        // Init
+        loadProjects()
+        loadAgents()
+        loadTasks()
+
+        // Auto refresh every 10 seconds
+        setInterval(() => {
+            loadProjects()
+            loadAgents()
+            loadTasks()
+        }, 10000)
+    </script>
+</body>
+</html>
