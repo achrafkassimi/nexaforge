@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: nexaforge_db
+    environment:
+      POSTGRES_DB: nexaforge
+      POSTGRES_USER: nexaforge
+      POSTGRES_PASSWORD: nexaforge123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexaforge_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
