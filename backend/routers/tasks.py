@@ -37,6 +37,16 @@ def update_task(task_id: str, data: TaskCreate, db: Session = Depends(get_db)):
     db.refresh(task)
     return task
 
+@router.patch("/{task_id}/status")
+def update_task_status(task_id: str, status: str, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task.status = status
+    db.commit()
+    db.refresh(task)
+    return task
+
 @router.delete("/{task_id}")
 def delete_task(task_id: str, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()

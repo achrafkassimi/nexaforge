@@ -53,3 +53,19 @@ Etape 13 — websockets/
 
 Kteb fiha: real-time updates lil dashboard
 
+--------------------
+
+
+ {
+    "id": "82de3a93-3338-45bc-ab35-29ecfe4afac1",
+    "name": "NexaForge Platform",
+    "description": "AI Agency Management Platform",
+    "status": "draft",
+    "priority": "high",
+    "deadline": null,
+    "manager_id": null,
+    "created_at": "2026-04-08T23:23:24.907963Z"
+  }
+
+
+  
