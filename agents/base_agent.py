@@ -25,11 +25,12 @@ class BaseAgent:
             res = await client.get(f"{API}/api/tasks/{task_id}", headers=self.headers)
             task = res.json()
             task["status"] = status
-            await client.put(
+            res2 = await client.put(
                 f"{API}/api/tasks/{task_id}",
                 headers=self.headers,
                 json=task
             )
+            print(f"[{self.name}] PUT status={status} → response={res2.status_code}")
 
     async def process_task(self, task: dict):
         raise NotImplementedError("Each agent must implement process_task")

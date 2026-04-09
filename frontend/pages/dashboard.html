@@ -503,6 +503,52 @@
     </div>
 
     <script>
+        // WebSocket connection
+            const ws = new WebSocket("ws://localhost:8000/ws/dashboard")
+
+            ws.onopen = () => {
+                console.log("WebSocket connected ✅")
+            }
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data)
+                console.log("WS message:", data)
+
+                if (data.type === "task_updated") {
+                    // Show notification
+                    showNotification(`Task "${data.title}" → ${data.status}`)
+                    // Reload data
+                    loadProjects()
+                    loadAgents()
+                    loadTasks()
+                }
+            }
+
+            ws.onclose = () => {
+                console.log("WebSocket disconnected")
+            }
+
+            function showNotification(msg) {
+                const notif = document.createElement("div")
+                notif.style.cssText = `
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    background: var(--purple);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    font-size: 13px;
+                    z-index: 999;
+                    animation: fadeIn 0.3s ease;
+                `
+                notif.textContent = msg
+                document.body.appendChild(notif)
+                setTimeout(() => notif.remove(), 3000)
+            }
+    </script>
+
+    <script>
         const API = "http://localhost:8000"
         const token = localStorage.getItem('token')
 

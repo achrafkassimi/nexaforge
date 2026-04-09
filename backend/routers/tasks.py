@@ -4,6 +4,11 @@ from database import get_db
 from models.task import Task
 from schemas.task import TaskCreate, TaskOut
 from typing import List
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from ws_manager.manager import manager
+import asyncio
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -26,8 +31,19 @@ def create_task(data: TaskCreate, db: Session = Depends(get_db)):
     db.refresh(task)
     return task
 
+# @router.put("/{task_id}", response_model=TaskOut)
+# def update_task(task_id: str, data: TaskCreate, db: Session = Depends(get_db)):
+#     task = db.query(Task).filter(Task.id == task_id).first()
+#     if not task:
+#         raise HTTPException(status_code=404, detail="Task not found")
+#     for key, value in data.model_dump().items():
+#         setattr(task, key, value)
+#     db.commit()
+#     db.refresh(task)
+#     return task
+
 @router.put("/{task_id}", response_model=TaskOut)
-def update_task(task_id: str, data: TaskCreate, db: Session = Depends(get_db)):
+async def update_task(task_id: str, data: TaskCreate, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -35,6 +51,15 @@ def update_task(task_id: str, data: TaskCreate, db: Session = Depends(get_db)):
         setattr(task, key, value)
     db.commit()
     db.refresh(task)
+
+    # Broadcast real-time
+    await manager.broadcast("dashboard", {
+        "type": "task_updated",
+        "task_id": str(task.id),
+        "title": task.title,
+        "status": task.status
+    })
+
     return task
 
 @router.patch("/{task_id}/status")
