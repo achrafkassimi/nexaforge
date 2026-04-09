@@ -6,6 +6,7 @@ from typing import Optional
 class AgentCreate(BaseModel):
     name: str
     agent_type: str
+    status: Optional[str] = "idle"
 
 class AgentOut(BaseModel):
     id: UUID

@@ -34,3 +34,15 @@ def delete_agent(agent_id: str, db: Session = Depends(get_db)):
     db.delete(agent)
     db.commit()
     return {"message": "Agent deleted"}
+
+
+@router.put("/{agent_id}", response_model=AgentOut)
+def update_agent(agent_id: str, data: AgentCreate, db: Session = Depends(get_db)):
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    for key, value in data.model_dump().items():
+        setattr(agent, key, value)
+    db.commit()
+    db.refresh(agent)
+    return agent

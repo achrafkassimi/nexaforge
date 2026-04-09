@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaForge — Logs</title>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <style>
+        body { display: flex; min-height: 100vh; align-items: flex-start; }
+
+        .sidebar {
+            width: 240px; min-height: 100vh;
+            background: var(--bg2); border-right: 1px solid var(--border);
+            padding: 24px 0; flex-shrink: 0;
+        }
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 20px 24px; border-bottom: 1px solid var(--border);
+        }
+        .logo-mark {
+            width: 32px; height: 32px; background: var(--purple);
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; font-weight: 800;
+        }
+        .logo-name { font-weight: 700; font-size: 16px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px; font-size: 14px; color: var(--muted);
+            cursor: pointer; transition: all 0.15s;
+            text-decoration: none; border-left: 2px solid transparent;
+        }
+        .nav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
+        .nav-item.active { color: var(--purple2); background: rgba(139,92,246,0.1); border-left-color: var(--purple); }
+
+        .main { flex: 1; padding: 32px; min-height: 100vh; background: var(--bg); }
+
+        .page-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 24px;
+        }
+        .page-title { font-size: 22px; font-weight: 700; }
+
+        .filters {
+            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 7px 16px; border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent; color: var(--muted);
+            font-size: 13px; cursor: pointer; width: auto;
+            transition: all 0.15s;
+        }
+        .filter-btn.active {
+            background: rgba(139,92,246,0.1);
+            border-color: var(--purple); color: var(--purple2);
+        }
+
+        .logs-wrap {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+        }
+
+        .log-item {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(139,92,246,0.06);
+            transition: background 0.15s;
+        }
+        .log-item:last-child { border-bottom: none; }
+        .log-item:hover { background: rgba(139,92,246,0.03); }
+
+        .log-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            flex-shrink: 0; margin-top: 5px;
+        }
+        .dot-task    { background: #a78bfa; }
+        .dot-project { background: #4ade80; }
+        .dot-agent   { background: #fbbf24; }
+        .dot-auth    { background: #60a5fa; }
+        .dot-error   { background: #f87171; }
+
+        .log-content { flex: 1; }
+        .log-msg { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+        .log-meta { font-size: 11px; color: var(--muted2); }
+
+        .log-time {
+            font-size: 11px; color: var(--muted2);
+            flex-shrink: 0; white-space: nowrap;
+        }
+
+        .badge {
+            display: inline-block; font-size: 10px;
+            padding: 2px 8px; border-radius: 100px;
+            margin-right: 6px;
+        }
+        .badge-task    { background: rgba(167,139,250,0.15); color: #a78bfa; }
+        .badge-project { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-agent   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-auth    { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .badge-error   { background: rgba(248,113,113,0.15); color: #f87171; }
+
+        .ws-indicator {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--muted);
+        }
+        .ws-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+        }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: var(--muted); font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-mark">N</div>
+        <div class="logo-name">NexaForge</div>
+    </div>
+    <a class="nav-item" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" href="projects.html">Projects</a>
+    <a class="nav-item" href="agents.html">Agents</a>
+    <a class="nav-item" href="users.html">Users</a>
+    <a class="nav-item active" href="logs.html">Logs</a>
+    <a class="nav-item" href="settings.html">Settings</a>
+</div>
+
+<div class="main">
+    <div class="page-header">
+        <div class="page-title">Activity Logs</div>
+        <div class="ws-indicator">
+            <div class="ws-dot"></div>
+            Live
+        </div>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterLogs('all', this)">All</button>
+        <button class="filter-btn" onclick="filterLogs('task', this)">Tasks</button>
+        <button class="filter-btn" onclick="filterLogs('project', this)">Projects</button>
+        <button class="filter-btn" onclick="filterLogs('agent', this)">Agents</button>
+        <button class="filter-btn" onclick="filterLogs('auth', this)">Auth</button>
+    </div>
+
+    <div class="logs-wrap" id="logs-list">
+        <div class="empty-state">Loading logs...</div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:8000"
+    const token = localStorage.getItem('token')
+    if (!token) window.location.href = 'login.html'
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    }
+
+    let allLogs = []
+    let currentFilter = 'all'
+
+    // Generate logs from real data
+    async function loadLogs() {
+        const [tasksRes, projectsRes, agentsRes] = await Promise.all([
+            fetch(`${API}/api/tasks/`, { headers }),
+            fetch(`${API}/api/projects/`, { headers }),
+            fetch(`${API}/api/agents/`, { headers })
+        ])
+
+        const tasks = await tasksRes.json()
+        const projects = await projectsRes.json()
+        const agents = await agentsRes.json()
+
+        allLogs = []
+
+        // Task logs
+        tasks.forEach(t => {
+            allLogs.push({
+                type: 'task',
+                msg: `Task "${t.title}" — status: ${t.status}`,
+                meta: `Priority: ${t.priority} · ${t.story_points} pts`,
+                time: t.created_at
+            })
+        })
+
+        // Project logs
+        projects.forEach(p => {
+            allLogs.push({
+                type: 'project',
+                msg: `Project "${p.name}" created`,
+                meta: `Priority: ${p.priority} · Status: ${p.status}`,
+                time: p.created_at
+            })
+        })
+
+        // Agent logs
+        agents.forEach(a => {
+            allLogs.push({
+                type: 'agent',
+                msg: `Agent "${a.name}" — ${a.agent_type}`,
+                meta: `Status: ${a.status}`,
+                time: a.created_at
+            })
+        })
+
+        // Sort by time desc
+        allLogs.sort((a, b) => new Date(b.time) - new Date(a.time))
+
+        renderLogs(allLogs)
+    }
+
+    function renderLogs(logs) {
+        const list = document.getElementById('logs-list')
+        if (logs.length === 0) {
+            list.innerHTML = `<div class="empty-state">No logs found</div>`
+            return
+        }
+        list.innerHTML = logs.map(l => `
+            <div class="log-item">
+                <div class="log-dot dot-${l.type}"></div>
+                <div class="log-content">
+                    <div class="log-msg">
+                        <span class="badge badge-${l.type}">${l.type}</span>
+                        ${l.msg}
+                    </div>
+                    <div class="log-meta">${l.meta}</div>
+                </div>
+                <div class="log-time">${formatTime(l.time)}</div>
+            </div>
+        `).join('')
+    }
+
+    function filterLogs(type, btn) {
+        currentFilter = type
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        if (type === 'all') {
+            renderLogs(allLogs)
+        } else {
+            renderLogs(allLogs.filter(l => l.type === type))
+        }
+    }
+
+    function formatTime(iso) {
+        const d = new Date(iso)
+        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString()
+    }
+
+    // WebSocket — real-time new log entries
+    const ws = new WebSocket("ws://localhost:8000/ws/dashboard")
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        if (data.type === "task_updated") {
+            // Add new log entry at top
+            allLogs.unshift({
+                type: 'task',
+                msg: `Task "${data.title}" → ${data.status}`,
+                meta: 'Updated by agent',
+                time: new Date().toISOString()
+            })
+            if (currentFilter === 'all' || currentFilter === 'task') {
+                renderLogs(currentFilter === 'all' ? allLogs : allLogs.filter(l => l.type === 'task'))
+            }
+        }
+    }
+
+    loadLogs()
+    setInterval(loadLogs, 15000)
+</script>
+</body>
+</html>

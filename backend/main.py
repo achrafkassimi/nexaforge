@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, projects, tasks, agents, sprints
+from routers import auth, projects, tasks, agents, sprints, users
 from routers import ws
 
 app = FastAPI(title="NexaForge API", version="1.0.0")
@@ -18,6 +18,8 @@ app.include_router(tasks.router)
 app.include_router(agents.router)
 app.include_router(sprints.router)
 app.include_router(ws.router)
+app.include_router(users.router)
+
 
 @app.get("/health")
 def health():

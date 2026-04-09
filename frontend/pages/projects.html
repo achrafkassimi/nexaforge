@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaForge — Projects</title>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <style>
+        body { display: flex; min-height: 100vh; align-items: flex-start; }
+
+        .sidebar {
+            width: 240px; min-height: 100vh;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            padding: 24px 0; flex-shrink: 0;
+        }
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-mark {
+            width: 32px; height: 32px; background: var(--purple);
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; font-weight: 800;
+        }
+        .logo-name { font-weight: 700; font-size: 16px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px; font-size: 14px; color: var(--muted);
+            cursor: pointer; transition: all 0.15s;
+            text-decoration: none; border-left: 2px solid transparent;
+        }
+        .nav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
+        .nav-item.active { color: var(--purple2); background: rgba(139,92,246,0.1); border-left-color: var(--purple); }
+
+        .main { flex: 1; padding: 32px; min-height: 100vh; background: var(--bg); }
+
+        .page-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 24px;
+        }
+        .page-title { font-size: 22px; font-weight: 700; }
+
+        .add-btn {
+            padding: 10px 20px; background: var(--purple);
+            border: none; border-radius: 10px; color: white;
+            font-size: 14px; cursor: pointer; width: auto;
+        }
+
+        .filters {
+            display: flex; gap: 10px; margin-bottom: 20px;
+        }
+        .filter-btn {
+            padding: 7px 16px; border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent; color: var(--muted);
+            font-size: 13px; cursor: pointer; width: auto;
+            transition: all 0.15s;
+        }
+        .filter-btn.active {
+            background: rgba(139,92,246,0.1);
+            border-color: var(--purple); color: var(--purple2);
+        }
+
+        .projects-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .project-card {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 14px; padding: 20px;
+            transition: border-color 0.2s; cursor: pointer;
+        }
+        .project-card:hover { border-color: var(--purple); }
+
+        .pc-header {
+            display: flex; justify-content: space-between;
+            align-items: flex-start; margin-bottom: 12px;
+        }
+        .pc-name { font-size: 15px; font-weight: 600; color: var(--text); }
+        .pc-desc {
+            font-size: 13px; color: var(--muted);
+            margin-bottom: 16px; line-height: 1.5;
+        }
+
+        .badge {
+            display: inline-block; font-size: 11px;
+            padding: 3px 10px; border-radius: 100px;
+        }
+        .badge-draft    { background: rgba(148,144,181,0.15); color: var(--muted); }
+        .badge-active   { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-review   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-done     { background: rgba(139,92,246,0.15); color: var(--purple2); }
+        .badge-low      { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-medium   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-high     { background: rgba(248,113,113,0.15); color: #f87171; }
+        .badge-critical { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+        .pc-footer {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-top: 12px;
+            padding-top: 12px; border-top: 1px solid var(--border);
+        }
+        .pc-date { font-size: 11px; color: var(--muted2); }
+
+        .pc-actions { display: flex; gap: 8px; }
+        .btn-icon {
+            padding: 5px 10px; border-radius: 6px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--muted); font-size: 12px; cursor: pointer;
+            width: auto; transition: all 0.15s;
+        }
+        .btn-icon:hover { border-color: var(--purple); color: var(--purple2); }
+        .btn-icon.danger:hover { border-color: #f87171; color: #f87171; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); z-index: 100;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 20px; padding: 32px;
+            width: 100%; max-width: 460px;
+        }
+        .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        label { font-size: 12px; color: var(--muted); }
+        select, textarea {
+            width: 100%; padding: 11px 14px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-size: 14px; outline: none; font-family: inherit;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-cancel {
+            flex: 1; padding: 11px; background: transparent;
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--muted); cursor: pointer; font-size: 14px;
+        }
+        .btn-confirm {
+            flex: 1; padding: 11px; background: var(--purple);
+            border: none; border-radius: 10px; color: white;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: var(--muted); font-size: 14px;
+        }
+        .empty-state div { font-size: 32px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-mark">N</div>
+        <div class="logo-name">NexaForge</div>
+    </div>
+    <a class="nav-item" href="dashboard.html">Dashboard</a>
+    <a class="nav-item active" href="projects.html">Projects</a>
+    <a class="nav-item" href="agents.html">Agents</a>
+    <a class="nav-item" href="users.html">Users</a>
+    <a class="nav-item" href="logs.html">Logs</a>
+    <a class="nav-item" href="settings.html">Settings</a>
+</div>
+
+<div class="main">
+    <div class="page-header">
+        <div class="page-title">Projects</div>
+        <button class="add-btn" onclick="openModal()">+ New Project</button>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterProjects('all', this)">All</button>
+        <button class="filter-btn" onclick="filterProjects('draft', this)">Draft</button>
+        <button class="filter-btn" onclick="filterProjects('active', this)">Active</button>
+        <button class="filter-btn" onclick="filterProjects('review', this)">Review</button>
+        <button class="filter-btn" onclick="filterProjects('done', this)">Done</button>
+    </div>
+
+    <div class="projects-grid" id="projects-grid">
+        <div class="empty-state">
+            <div>📋</div>
+            Loading projects...
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREATE -->
+<div class="modal-overlay" id="modal-create">
+    <div class="modal">
+        <div class="modal-title">New Project</div>
+        <div class="form-group">
+            <label>Project Name</label>
+            <input type="text" id="p-name" placeholder="My Project">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="p-desc" placeholder="What is this project about?"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Priority</label>
+            <select id="p-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm" onclick="createProject()">Create</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-overlay" id="modal-edit">
+    <div class="modal">
+        <div class="modal-title">Edit Project</div>
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+            <label>Project Name</label>
+            <input type="text" id="edit-name">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="edit-desc"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select id="edit-status">
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="review">Review</option>
+                <option value="done">Done</option>
+                <option value="archived">Archived</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Priority</label>
+            <select id="edit-priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="btn-confirm" onclick="updateProject()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:8000"
+    const token = localStorage.getItem('token')
+    if (!token) window.location.href = 'login.html'
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    }
+
+    let allProjects = []
+    let currentFilter = 'all'
+
+    async function loadProjects() {
+        const res = await fetch(`${API}/api/projects/`, { headers })
+        allProjects = await res.json()
+        renderProjects(allProjects)
+    }
+
+    function renderProjects(projects) {
+        const grid = document.getElementById('projects-grid')
+        if (projects.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><div>📋</div>No projects found</div>`
+            return
+        }
+        grid.innerHTML = projects.map(p => `
+            <div class="project-card">
+                <div class="pc-header">
+                    <div class="pc-name">${p.name}</div>
+                    <span class="badge badge-${p.status}">${p.status}</span>
+                </div>
+                <div class="pc-desc">${p.description || 'No description'}</div>
+                <span class="badge badge-${p.priority}">${p.priority}</span>
+                <div class="pc-footer">
+                    <div class="pc-date">${new Date(p.created_at).toLocaleDateString()}</div>
+                    <div class="pc-actions">
+                        <button class="btn-icon" onclick="openEditModal('${p.id}')">Edit</button>
+                        <button class="btn-icon danger" onclick="deleteProject('${p.id}')">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `).join('')
+    }
+
+    function filterProjects(status, btn) {
+        currentFilter = status
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        if (status === 'all') {
+            renderProjects(allProjects)
+        } else {
+            renderProjects(allProjects.filter(p => p.status === status))
+        }
+    }
+
+    function openModal() {
+        document.getElementById('modal-create').classList.add('open')
+    }
+
+    function closeModal() {
+        document.getElementById('modal-create').classList.remove('open')
+    }
+
+    function openEditModal(id) {
+        const p = allProjects.find(p => p.id === id)
+        document.getElementById('edit-id').value = p.id
+        document.getElementById('edit-name').value = p.name
+        document.getElementById('edit-desc').value = p.description || ''
+        document.getElementById('edit-status').value = p.status
+        document.getElementById('edit-priority').value = p.priority
+        document.getElementById('modal-edit').classList.add('open')
+    }
+
+    function closeEditModal() {
+        document.getElementById('modal-edit').classList.remove('open')
+    }
+
+    async function createProject() {
+        const res = await fetch(`${API}/api/projects/`, {
+            method: 'POST', headers,
+            body: JSON.stringify({
+                name: document.getElementById('p-name').value,
+                description: document.getElementById('p-desc').value,
+                priority: document.getElementById('p-priority').value
+            })
+        })
+        if (res.ok) { closeModal(); loadProjects() }
+    }
+
+    async function updateProject() {
+        const id = document.getElementById('edit-id').value
+        const res = await fetch(`${API}/api/projects/${id}`, {
+            method: 'PUT', headers,
+            body: JSON.stringify({
+                name: document.getElementById('edit-name').value,
+                description: document.getElementById('edit-desc').value,
+                status: document.getElementById('edit-status').value,
+                priority: document.getElementById('edit-priority').value
+            })
+        })
+        if (res.ok) { closeEditModal(); loadProjects() }
+    }
+
+    async function deleteProject(id) {
+        if (!confirm('Delete this project?')) return
+        await fetch(`${API}/api/projects/${id}`, { method: 'DELETE', headers })
+        loadProjects()
+    }
+
+    // WebSocket
+    const ws = new WebSocket("ws://localhost:8000/ws/dashboard")
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        if (data.type === "task_updated") loadProjects()
+    }
+
+    loadProjects()
+</script>
+</body>
+</html>
