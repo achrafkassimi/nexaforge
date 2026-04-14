@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models.task import Task
+from models.task_comment import TaskComment
 from schemas.task import TaskCreate, TaskOut
+from schemas.task_comment import TaskCommentCreate, TaskCommentOut
 from typing import List
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from ws_manager.manager import manager
-import asyncio
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -63,13 +64,21 @@ async def update_task(task_id: str, data: TaskCreate, db: Session = Depends(get_
     return task
 
 @router.patch("/{task_id}/status")
-def update_task_status(task_id: str, status: str, db: Session = Depends(get_db)):
+async def update_task_status(task_id: str, status: str, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     task.status = status
     db.commit()
     db.refresh(task)
+
+    await manager.broadcast("dashboard", {
+        "type": "task_updated",
+        "task_id": str(task.id),
+        "title": task.title,
+        "status": task.status
+    })
+
     return task
 
 @router.delete("/{task_id}")
@@ -80,3 +89,27 @@ def delete_task(task_id: str, db: Session = Depends(get_db)):
     db.delete(task)
     db.commit()
     return {"message": "Task deleted"}
+
+
+@router.get("/{task_id}/comments", response_model=List[TaskCommentOut])
+def get_task_comments(task_id: str, db: Session = Depends(get_db)):
+    return db.query(TaskComment).filter(TaskComment.task_id == task_id).order_by(TaskComment.created_at).all()
+
+
+@router.post("/{task_id}/comments", response_model=TaskCommentOut)
+async def create_task_comment(task_id: str, data: TaskCommentCreate, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    comment = TaskComment(task_id=task_id, **data.model_dump())
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+
+    await manager.broadcast("dashboard", {
+        "type": "task_comment",
+        "task_id": task_id,
+        "content": comment.content
+    })
+
+    return comment

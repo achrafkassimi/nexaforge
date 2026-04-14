@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaForge — Sprint Burndown</title>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body { display: flex; min-height: 100vh; align-items: flex-start; }
+
+        .sidebar {
+            width: 240px; min-height: 100vh; background: var(--bg2);
+            border-right: 1px solid var(--border); padding: 24px 0; flex-shrink: 0;
+        }
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 20px 24px; border-bottom: 1px solid var(--border);
+        }
+        .logo-mark {
+            width: 32px; height: 32px; background: var(--purple);
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; font-weight: 800;
+        }
+        .logo-name { font-weight: 700; font-size: 16px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px; font-size: 14px; color: var(--muted);
+            cursor: pointer; transition: all 0.15s; text-decoration: none;
+            border-left: 2px solid transparent;
+        }
+        .nav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
+        .nav-item.active { color: var(--purple2); background: rgba(139,92,246,0.1); border-left-color: var(--purple); }
+
+        .main { flex: 1; padding: 32px; }
+
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+        .page-title { font-size: 22px; font-weight: 700; }
+
+        .sprint-selector {
+            background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+            border-radius: 8px; padding: 8px 14px; font-size: 14px; cursor: pointer;
+        }
+        .sprint-selector:focus { outline: none; border-color: var(--purple); }
+
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+        .stat-card {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px;
+        }
+        .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-value.green { color: #34d399; }
+        .stat-value.yellow { color: #fbbf24; }
+        .stat-value.purple { color: #a78bfa; }
+
+        .chart-card {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 12px; padding: 24px; margin-bottom: 24px;
+        }
+        .chart-title { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px; }
+        .chart-wrapper { position: relative; height: 320px; }
+
+        .task-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .task-table th { text-align: left; padding: 10px 14px; font-size: 12px; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .task-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .task-table tr:last-child td { border-bottom: none; }
+        .task-table tr:hover td { background: rgba(139,92,246,0.04); }
+
+        .badge {
+            padding: 3px 8px; border-radius: 20px; font-size: 11px;
+            font-weight: 600; text-transform: uppercase;
+        }
+        .badge-done       { background: rgba(16,185,129,0.2); color: #34d399; }
+        .badge-in_progress{ background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .badge-peer_review{ background: rgba(139,92,246,0.2); color: #a78bfa; }
+        .badge-todo       { background: rgba(59,130,246,0.2); color: #60a5fa; }
+        .badge-backlog    { background: rgba(100,116,139,0.2); color: #94a3b8; }
+        .badge-final_review{ background: rgba(236,72,153,0.2); color: #f472b6; }
+
+        .empty-state { text-align: center; padding: 48px; color: var(--muted); }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">N</div>
+            <span class="logo-name">NexaForge</span>
+        </div>
+        <a href="dashboard.html" class="nav-item">⬛ Dashboard</a>
+        <a href="projects.html" class="nav-item">📁 Projects</a>
+        <a href="sprint_burndown.html" class="nav-item active">📉 Burndown</a>
+        <a href="agents.html" class="nav-item">🤖 Agents</a>
+        <a href="users.html" class="nav-item">👤 Users</a>
+        <a href="logs.html" class="nav-item">📋 Logs</a>
+        <a href="settings.html" class="nav-item">⚙️ Settings</a>
+    </nav>
+
+    <main class="main">
+        <div class="page-header">
+            <div class="page-title">Sprint Burndown</div>
+            <select class="sprint-selector" id="sprint-select" onchange="loadSprint(this.value)">
+                <option value="">Select a sprint...</option>
+            </select>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total Points</div>
+                <div class="stat-value" id="stat-total">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value green" id="stat-done">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Remaining</div>
+                <div class="stat-value yellow" id="stat-remaining">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Velocity</div>
+                <div class="stat-value purple" id="stat-velocity">—</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Burndown — Ideal vs Real</div>
+            <div class="chart-wrapper">
+                <canvas id="burndown-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Tasks</div>
+            <div id="task-list-container">
+                <div class="empty-state">Select a sprint to view tasks.</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://localhost:8000';
+        const token = localStorage.getItem('token');
+        if (!token) location.href = 'login.html';
+
+        const headers = { 'Authorization': `Bearer ${token}` };
+        let chart = null;
+
+        async function loadSprints() {
+            const res = await fetch(`${API}/api/sprints/`, { headers });
+            const sprints = await res.json();
+            const sel = document.getElementById('sprint-select');
+            sprints.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = `${s.name} (${s.status})`;
+                sel.appendChild(opt);
+            });
+            // Auto-load active sprint if present
+            const active = sprints.find(s => s.status === 'active');
+            if (active) { sel.value = active.id; loadSprint(active.id); }
+        }
+
+        async function loadSprint(sprintId) {
+            if (!sprintId) return;
+
+            const [sprintRes, tasksRes] = await Promise.all([
+                fetch(`${API}/api/sprints/`, { headers }),
+                fetch(`${API}/api/tasks/`, { headers })
+            ]);
+
+            const sprints = await sprintRes.json();
+            const allTasks = await tasksRes.json();
+
+            const sprint = sprints.find(s => s.id === sprintId);
+            if (!sprint) return;
+
+            const tasks = allTasks.filter(t => t.sprint_id === sprintId);
+
+            const totalPoints = tasks.reduce((s, t) => s + (t.story_points || 0), 0);
+            const donePoints  = tasks.filter(t => t.status === 'done').reduce((s, t) => s + (t.story_points || 0), 0);
+            const remaining   = totalPoints - donePoints;
+
+            document.getElementById('stat-total').textContent     = totalPoints;
+            document.getElementById('stat-done').textContent      = donePoints;
+            document.getElementById('stat-remaining').textContent = remaining;
+            document.getElementById('stat-velocity').textContent  = sprint.velocity || donePoints;
+
+            renderChart(sprint, tasks);
+            renderTaskTable(tasks);
+        }
+
+        function renderChart(sprint, tasks) {
+            const start = sprint.start_date ? new Date(sprint.start_date) : null;
+            const end   = sprint.end_date   ? new Date(sprint.end_date)   : null;
+
+            const totalPoints = tasks.reduce((s, t) => s + (t.story_points || 0), 0);
+
+            let labels = [], idealLine = [], realLine = [];
+
+            if (start && end) {
+                const days = Math.max(1, Math.round((end - start) / 86400000));
+                const pointsPerDay = totalPoints / days;
+                const today = new Date();
+
+                for (let i = 0; i <= days; i++) {
+                    const day = new Date(start);
+                    day.setDate(start.getDate() + i);
+                    labels.push(`Day ${i + 1}`);
+                    idealLine.push(Math.max(0, Math.round((totalPoints - pointsPerDay * i) * 10) / 10));
+
+                    if (day <= today) {
+                        // Real: approximate by counting tasks "done" as of today
+                        const doneSoFar = tasks
+                            .filter(t => t.status === 'done' && new Date(t.created_at) <= day)
+                            .reduce((s, t) => s + (t.story_points || 0), 0);
+                        realLine.push(Math.max(0, totalPoints - doneSoFar));
+                    } else {
+                        realLine.push(null);
+                    }
+                }
+            } else {
+                // No dates — show flat bars by status
+                const statuses = ['backlog','todo','in_progress','peer_review','final_review','done'];
+                statuses.forEach(s => {
+                    labels.push(s.replace('_', ' '));
+                    const pts = tasks.filter(t => t.status === s).reduce((a, t) => a + (t.story_points || 0), 0);
+                    idealLine.push(pts);
+                    realLine.push(null);
+                });
+            }
+
+            if (chart) chart.destroy();
+
+            const ctx = document.getElementById('burndown-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Ideal',
+                            data: idealLine,
+                            borderColor: 'rgba(139,92,246,0.6)',
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Real',
+                            data: realLine,
+                            borderColor: '#34d399',
+                            backgroundColor: 'rgba(52,211,153,0.08)',
+                            pointRadius: 3,
+                            tension: 0.2,
+                            fill: true,
+                            spanGaps: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                        y: {
+                            ticks: { color: '#64748b' },
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            title: { display: true, text: 'Story Points Remaining', color: '#64748b' },
+                            min: 0
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTaskTable(tasks) {
+            const container = document.getElementById('task-list-container');
+            if (!tasks.length) {
+                container.innerHTML = '<div class="empty-state">No tasks in this sprint.</div>';
+                return;
+            }
+            const rows = tasks.map(t => `
+                <tr>
+                    <td><a href="task_detail.html?id=${t.id}" style="color:var(--text);text-decoration:none">${escapeHtml(t.title)}</a></td>
+                    <td><span class="badge badge-${t.status}">${t.status.replace('_',' ')}</span></td>
+                    <td style="color:var(--muted)">${t.priority}</td>
+                    <td style="text-align:right;font-weight:600">${t.story_points} pts</td>
+                </tr>
+            `).join('');
+            container.innerHTML = `
+                <table class="task-table">
+                    <thead><tr>
+                        <th>Task</th><th>Status</th><th>Priority</th><th style="text-align:right">Points</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        loadSprints();
+    </script>
+</body>
+</html>

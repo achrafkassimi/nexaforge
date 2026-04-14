@@ -4,3 +4,4 @@ from .project import Project
 from .task import Task
 from .sprint import Sprint
 from .agent import Agent
+from .task_comment import TaskComment

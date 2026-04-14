@@ -12,6 +12,16 @@ class TaskCreate(BaseModel):
     assignee_id: Optional[UUID] = None
     deadline: Optional[datetime] = None
 
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    story_points: Optional[int] = None
+    sprint_id: Optional[UUID] = None
+    assignee_id: Optional[UUID] = None
+    deadline: Optional[datetime] = None
+
 class TaskOut(BaseModel):
     id: UUID
     title: str
