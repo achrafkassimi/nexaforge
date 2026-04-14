@@ -6,130 +6,46 @@
     <title>NexaForge — Task Detail</title>
     <link rel="stylesheet" href="../styles/globals.css">
     <style>
-        body { display: flex; min-height: 100vh; align-items: flex-start; }
-
-        .sidebar {
-            width: 240px; min-height: 100vh; background: var(--bg2);
-            border-right: 1px solid var(--border); padding: 24px 0; flex-shrink: 0;
-        }
-        .sidebar-logo {
-            display: flex; align-items: center; gap: 10px;
-            padding: 0 20px 24px; border-bottom: 1px solid var(--border);
-        }
-        .logo-mark {
-            width: 32px; height: 32px; background: var(--purple);
-            border-radius: 8px; display: flex; align-items: center;
-            justify-content: center; font-weight: 800;
-        }
-        .logo-name { font-weight: 700; font-size: 16px; }
-        .nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 11px 20px; font-size: 14px; color: var(--muted);
-            cursor: pointer; transition: all 0.15s; text-decoration: none;
-            border-left: 2px solid transparent;
-        }
-        .nav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
-        .nav-item.active { color: var(--purple2); background: rgba(139,92,246,0.1); border-left-color: var(--purple); }
-
-        .main { flex: 1; padding: 32px; max-width: 900px; }
-
-        .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-        .breadcrumb a { color: var(--purple2); text-decoration: none; }
-        .breadcrumb a:hover { text-decoration: underline; }
-
-        .task-header { margin-bottom: 24px; }
         .task-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
-        .task-meta { display: flex; gap: 12px; flex-wrap: wrap; }
-
-        .badge {
-            padding: 4px 10px; border-radius: 20px; font-size: 12px;
-            font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .badge-status-backlog    { background: rgba(100,116,139,0.2); color: #94a3b8; }
-        .badge-status-todo       { background: rgba(59,130,246,0.2);  color: #60a5fa; }
-        .badge-status-in_progress{ background: rgba(245,158,11,0.2);  color: #fbbf24; }
-        .badge-status-peer_review{ background: rgba(139,92,246,0.2);  color: #a78bfa; }
-        .badge-status-final_review{background: rgba(236,72,153,0.2);  color: #f472b6; }
-        .badge-status-done       { background: rgba(16,185,129,0.2);  color: #34d399; }
-        .badge-priority-low      { background: rgba(100,116,139,0.2); color: #94a3b8; }
-        .badge-priority-medium   { background: rgba(59,130,246,0.2);  color: #60a5fa; }
-        .badge-priority-high     { background: rgba(245,158,11,0.2);  color: #fbbf24; }
-        .badge-priority-critical { background: rgba(239,68,68,0.2);   color: #f87171; }
+        .task-meta  { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
 
         .grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
 
-        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
         .card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
 
-        .description { font-size: 14px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
+        .description       { font-size: 14px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
         .description-empty { color: var(--muted); font-style: italic; }
 
-        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { color: var(--muted); }
-        .info-value { font-weight: 500; }
-
-        .status-select {
-            background: var(--bg); border: 1px solid var(--border); color: var(--text);
-            border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer;
-        }
+        .status-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
         .status-select:focus { outline: none; border-color: var(--purple); }
 
-        /* Comments */
-        .comments-section { margin-top: 24px; }
         .comment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; min-height: 60px; }
-
-        .comment-item {
-            background: var(--bg); border: 1px solid var(--border);
-            border-radius: 8px; padding: 14px;
-        }
-        .comment-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .comment-author { font-size: 12px; font-weight: 600; color: var(--purple2); }
-        .comment-time { font-size: 11px; color: var(--muted); }
+        .comment-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+        .comment-header  { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .comment-author  { font-size: 12px; font-weight: 600; color: var(--purple2); }
+        .comment-time    { font-size: 11px; color: var(--muted); }
         .comment-content { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
 
-        .comment-form { display: flex; flex-direction: column; gap: 10px; }
-        .comment-textarea {
-            background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-            color: var(--text); padding: 12px; font-size: 14px; resize: vertical;
-            min-height: 80px; font-family: inherit;
-        }
+        .comment-form     { display: flex; flex-direction: column; gap: 10px; }
+        .comment-textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 12px; font-size: 14px; resize: vertical; min-height: 80px; font-family: inherit; width: 100%; box-sizing: border-box; }
         .comment-textarea:focus { outline: none; border-color: var(--purple); }
-        .btn-post {
-            align-self: flex-end; background: var(--purple); color: #fff;
-            border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px;
-            font-weight: 600; cursor: pointer; transition: opacity 0.15s;
-        }
-        .btn-post:hover { opacity: 0.85; }
-        .btn-post:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .empty-state { color: var(--muted); font-size: 13px; font-style: italic; }
+        .btn-post { align-self: flex-end; background: var(--purple); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; width: auto; }
+        .btn-post:hover    { opacity: 0.85; }
+        .btn-post:disabled { opacity: 0.4; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <nav class="sidebar">
-        <div class="sidebar-logo">
-            <div class="logo-mark">N</div>
-            <span class="logo-name">NexaForge</span>
-        </div>
-        <a href="dashboard.html" class="nav-item">⬛ Dashboard</a>
-        <a href="projects.html" class="nav-item">📁 Projects</a>
-        <a href="agents.html" class="nav-item">🤖 Agents</a>
-        <a href="users.html" class="nav-item">👤 Users</a>
-        <a href="logs.html" class="nav-item">📋 Logs</a>
-        <a href="settings.html" class="nav-item">⚙️ Settings</a>
-    </nav>
-
-    <main class="main">
+<div class="app-layout">
+    <div id="app-sidebar"></div>
+    <div class="main">
         <div class="breadcrumb">
-            <a href="dashboard.html">Dashboard</a> / <span id="breadcrumb-title">Task</span>
+            <a href="projects.html">Projects</a> / <span id="breadcrumb-title">Task</span>
         </div>
 
-        <div class="task-header">
-            <div class="task-title" id="task-title">Loading...</div>
-            <div class="task-meta" id="task-meta"></div>
-        </div>
+        <div class="task-title" id="task-title">Loading...</div>
+        <div class="task-meta" id="task-meta"></div>
 
         <div class="grid">
             <div>
@@ -140,10 +56,10 @@
                     </div>
                 </div>
 
-                <div class="card comments-section">
+                <div class="card">
                     <div class="card-title">Agent Feed / Comments</div>
                     <div class="comment-list" id="comment-list">
-                        <span class="empty-state">No comments yet.</span>
+                        <span style="color:var(--muted);font-size:13px;font-style:italic">No comments yet.</span>
                     </div>
                     <div class="comment-form">
                         <textarea class="comment-textarea" id="comment-input" placeholder="Write a comment or agent output..."></textarea>
@@ -166,143 +82,110 @@
                             <option value="done">Done</option>
                         </select>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Priority</span>
-                        <span class="info-value" id="task-priority">—</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Story Points</span>
-                        <span class="info-value" id="task-points">—</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Assignee</span>
-                        <span class="info-value" id="task-assignee">—</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Sprint</span>
-                        <span class="info-value" id="task-sprint">—</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Deadline</span>
-                        <span class="info-value" id="task-deadline">—</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Created</span>
-                        <span class="info-value" id="task-created">—</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">Priority</span><span class="info-value" id="task-priority">—</span></div>
+                    <div class="info-row"><span class="info-label">Story Points</span><span class="info-value" id="task-points">—</span></div>
+                    <div class="info-row"><span class="info-label">Assignee</span><span class="info-value" id="task-assignee">—</span></div>
+                    <div class="info-row"><span class="info-label">Sprint</span><span class="info-value" id="task-sprint">—</span></div>
+                    <div class="info-row"><span class="info-label">Deadline</span><span class="info-value" id="task-deadline">—</span></div>
+                    <div class="info-row"><span class="info-label">Created</span><span class="info-value" id="task-created">—</span></div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</div>
 
-    <script>
-        const API = 'http://localhost:8000';
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams(location.search);
-        const taskId = params.get('id');
+<script src="../scripts/sidebar.js"></script>
+<script>
+    const API     = 'http://localhost:8000';
+    const headers = NexaAuth.headers;
+    const params  = new URLSearchParams(location.search);
+    const taskId  = params.get('id');
+    if (!taskId) location.href = 'projects.html';
 
-        if (!token) location.href = 'login.html';
-        if (!taskId) location.href = 'dashboard.html';
+    function escHtml(text) {
+        return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
-        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    async function loadTask() {
+        const res = await fetch(`${API}/api/tasks/${taskId}`, { headers });
+        if (!res.ok) { location.href = 'projects.html'; return; }
+        const task = await res.json();
 
-        async function loadTask() {
-            const res = await fetch(`${API}/api/tasks/${taskId}`, { headers });
-            if (!res.ok) { location.href = 'dashboard.html'; return; }
-            const task = await res.json();
+        document.title = `NexaForge — ${task.title}`;
+        document.getElementById('task-title').textContent       = task.title;
+        document.getElementById('breadcrumb-title').textContent = task.title;
 
-            document.title = `NexaForge — ${task.title}`;
-            document.getElementById('task-title').textContent = task.title;
-            document.getElementById('breadcrumb-title').textContent = task.title;
+        document.getElementById('task-meta').innerHTML = `
+            <span class="badge badge-${task.status}">${task.status.replace('_',' ')}</span>
+            <span class="badge badge-${task.priority}">${task.priority}</span>
+            <span class="badge" style="background:rgba(139,92,246,0.1);color:var(--muted)">${task.story_points} pts</span>
+        `;
 
-            document.getElementById('task-meta').innerHTML = `
-                <span class="badge badge-status-${task.status}">${task.status.replace('_', ' ')}</span>
-                <span class="badge badge-priority-${task.priority}">${task.priority}</span>
-                <span class="badge" style="background:rgba(139,92,246,0.1);color:var(--muted)">${task.story_points} pts</span>
-            `;
-
-            if (task.description) {
-                document.getElementById('task-description').textContent = task.description;
-            }
-
-            document.getElementById('status-select').value = task.status;
-            document.getElementById('task-priority').textContent = task.priority;
-            document.getElementById('task-points').textContent = task.story_points;
-            document.getElementById('task-assignee').textContent = task.assignee_id ? task.assignee_id.slice(0, 8) + '...' : 'Unassigned';
-            document.getElementById('task-sprint').textContent = task.sprint_id ? task.sprint_id.slice(0, 8) + '...' : '—';
-            document.getElementById('task-deadline').textContent = task.deadline ? new Date(task.deadline).toLocaleDateString() : '—';
-            document.getElementById('task-created').textContent = new Date(task.created_at).toLocaleDateString();
+        if (task.description) {
+            document.getElementById('task-description').textContent = task.description;
         }
 
-        async function loadComments() {
-            const res = await fetch(`${API}/api/tasks/${taskId}/comments`, { headers });
-            if (!res.ok) return;
-            const comments = await res.json();
-            const list = document.getElementById('comment-list');
-            if (comments.length === 0) {
-                list.innerHTML = '<span class="empty-state">No comments yet.</span>';
-                return;
-            }
-            list.innerHTML = comments.map(c => `
-                <div class="comment-item">
-                    <div class="comment-header">
-                        <span class="comment-author">${c.author_id ? c.author_id.slice(0, 8) + '...' : 'Agent'}</span>
-                        <span class="comment-time">${new Date(c.created_at).toLocaleString()}</span>
-                    </div>
-                    <div class="comment-content">${escapeHtml(c.content)}</div>
+        document.getElementById('status-select').value     = task.status;
+        document.getElementById('task-priority').textContent = task.priority;
+        document.getElementById('task-points').textContent   = task.story_points;
+        document.getElementById('task-assignee').textContent = task.assignee_id ? task.assignee_id.slice(0,8) + '...' : 'Unassigned';
+        document.getElementById('task-sprint').textContent   = task.sprint_id   ? task.sprint_id.slice(0,8)   + '...' : '—';
+        document.getElementById('task-deadline').textContent = task.deadline ? new Date(task.deadline).toLocaleDateString() : '—';
+        document.getElementById('task-created').textContent  = new Date(task.created_at).toLocaleDateString();
+    }
+
+    async function loadComments() {
+        const res = await fetch(`${API}/api/tasks/${taskId}/comments`, { headers });
+        if (!res.ok) return;
+        const comments = await res.json();
+        const list = document.getElementById('comment-list');
+        if (!comments.length) {
+            list.innerHTML = '<span style="color:var(--muted);font-size:13px;font-style:italic">No comments yet.</span>';
+            return;
+        }
+        list.innerHTML = comments.map(c => `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <span class="comment-author">${c.author_id ? c.author_id.slice(0,8) + '...' : 'Agent'}</span>
+                    <span class="comment-time">${new Date(c.created_at).toLocaleString()}</span>
                 </div>
-            `).join('');
-        }
+                <div class="comment-content">${escHtml(c.content)}</div>
+            </div>
+        `).join('');
+    }
 
-        async function updateStatus(status) {
-            await fetch(`${API}/api/tasks/${taskId}/status?status=${status}`, { method: 'PATCH', headers });
-            const badge = document.querySelector('.badge-status-' + document.getElementById('status-select').dataset.prev);
-            document.getElementById('task-meta').querySelector('.badge:first-child').className = `badge badge-status-${status}`;
-            document.getElementById('task-meta').querySelector('.badge:first-child').textContent = status.replace('_', ' ');
-        }
+    async function updateStatus(status) {
+        await fetch(`${API}/api/tasks/${taskId}/status?status=${status}`, { method:'PATCH', headers });
+    }
 
-        async function postComment() {
-            const input = document.getElementById('comment-input');
-            const btn = document.getElementById('btn-post');
-            const content = input.value.trim();
-            if (!content) return;
+    async function postComment() {
+        const input = document.getElementById('comment-input');
+        const btn   = document.getElementById('btn-post');
+        const content = input.value.trim();
+        if (!content) return;
 
-            btn.disabled = true;
-            btn.textContent = 'Posting...';
+        btn.disabled = true;
+        btn.textContent = 'Posting...';
 
-            const res = await fetch(`${API}/api/tasks/${taskId}/comments`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ content })
-            });
+        const res = await fetch(`${API}/api/tasks/${taskId}/comments`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ content })
+        });
 
-            if (res.ok) {
-                input.value = '';
-                await loadComments();
-            }
+        if (res.ok) { input.value = ''; await loadComments(); }
+        btn.disabled = false;
+        btn.textContent = 'Post Comment';
+    }
 
-            btn.disabled = false;
-            btn.textContent = 'Post Comment';
-        }
+    const ws = new WebSocket('ws://localhost:8000/ws/dashboard');
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'task_comment' && msg.task_id === taskId)   loadComments();
+        if (msg.type === 'task_updated' && msg.task_id === taskId)   document.getElementById('status-select').value = msg.status;
+    };
 
-        function escapeHtml(text) {
-            return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        }
-
-        // WebSocket — listen for new comments on this task
-        const ws = new WebSocket(`ws://localhost:8000/ws/dashboard`);
-        ws.onmessage = (e) => {
-            const msg = JSON.parse(e.data);
-            if (msg.type === 'task_comment' && msg.task_id === taskId) {
-                loadComments();
-            }
-            if (msg.type === 'task_updated' && msg.task_id === taskId) {
-                document.getElementById('status-select').value = msg.status;
-            }
-        };
-
-        loadTask();
-        loadComments();
-    </script>
+    loadTask();
+    loadComments();
+</script>
 </body>
 </html>

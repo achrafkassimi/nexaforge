@@ -6,412 +6,35 @@
     <title>NexaForge — Dashboard</title>
     <link rel="stylesheet" href="../styles/globals.css">
     <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            align-items: flex-start;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 240px;
-            min-height: 100vh;
-            background: var(--bg2);
-            border-right: 1px solid var(--border);
-            padding: 24px 0;
-            flex-shrink: 0;
-        }
-
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0 20px 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo-mark {
-            width: 32px;
-            height: 32px;
-            background: var(--purple);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-        }
-
-        .logo-name {
-            font-weight: 700;
-            font-size: 16px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 20px;
-            font-size: 14px;
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.15s;
-            text-decoration: none;
-            border-left: 2px solid transparent;
-        }
-
-        .nav-item:hover {
-            color: var(--text);
-            background: rgba(139,92,246,0.06);
-        }
-
-        .nav-item.active {
-            color: var(--purple2);
-            background: rgba(139,92,246,0.1);
-            border-left-color: var(--purple);
-        }
-
-        .sidebar-bottom {
-            position: absolute;
-            bottom: 24px;
-            padding: 0 20px;
-            width: 240px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: var(--surface);
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: var(--purple);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .user-name { font-size: 13px; font-weight: 500; }
-        .user-role { font-size: 11px; color: var(--muted); }
-
-        /* MAIN */
-        .main {
-            flex: 1;
-            padding: 32px;
-            min-height: 100vh;
-            background: var(--bg);
-        }
-
-        .page-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-
-        /* KPIs */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .kpi-card {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px;
-        }
-
-        .kpi-val {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .kpi-label {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 4px;
-        }
-
-        .kpi-badge {
-            display: inline-block;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 100px;
-            margin-top: 8px;
-            background: rgba(139,92,246,0.15);
-            color: var(--purple2);
-        }
-
-        /* SECTIONS */
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 14px;
-            color: var(--text);
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px;
-        }
-
-        /* PROJECTS TABLE */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th {
-            text-align: left;
-            color: var(--muted);
-            font-weight: 500;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(139,92,246,0.08);
-            color: var(--text);
-        }
-
-        .badge {
-            display: inline-block;
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 100px;
-        }
-
-        .badge-active { background: rgba(74,222,128,0.15); color: #4ade80; }
-        .badge-draft  { background: rgba(148,144,181,0.15); color: var(--muted); }
-        .badge-review { background: rgba(251,191,36,0.15); color: #fbbf24; }
-
-        /* AGENTS */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
         .agent-list { display: flex; flex-direction: column; gap: 10px; }
-
-        .agent-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--surface);
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        .agent-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .av-backend  { background: #1d4ed8; }
-        .av-frontend { background: #6d28d9; }
-        .av-database { background: #047857; }
-        .av-devops   { background: #b45309; }
-        .av-manager  { background: #9d174d; }
-
+        .agent-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
+        .agent-avatar { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; }
         .agent-name { font-size: 13px; font-weight: 500; }
         .agent-type { font-size: 11px; color: var(--muted); }
-
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #4ade80;
-            margin-left: auto;
-        }
-
-        .offline-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--muted);
-            margin-left: auto;
-        }
-
-        /* MODAL */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            width: 100%;
-            max-width: 460px;
-        }
-
-        .modal-title {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 14px;
-        }
-
-        label { font-size: 12px; color: var(--muted); }
-
-        select {
-            width: 100%;
-            padding: 11px 14px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 14px;
-            outline: none;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 11px 14px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 14px;
-            outline: none;
-            resize: vertical;
-            min-height: 80px;
-            font-family: inherit;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 11px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-confirm {
-            flex: 1;
-            padding: 11px;
-            background: var(--purple);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .add-btn {
-            padding: 9px 18px;
-            background: var(--purple);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 13px;
-            cursor: pointer;
-            width: auto;
-            margin-bottom: 14px;
-        }
+        .add-btn-sm { padding: 7px 14px; background: var(--purple); border: none; border-radius: 8px; color: white; font-size: 13px; width: auto; margin-bottom: 14px; }
+        .ws-notif { position: fixed; bottom: 24px; right: 24px; background: var(--purple); color: white; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .ws-notif.show { opacity: 1; }
     </style>
 </head>
 <body>
+<div class="app-layout">
+    <div id="app-sidebar"></div>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <div class="logo-mark">N</div>
-            <div class="logo-name">NexaForge</div>
-        </div>
-
-        <!-- <a class="nav-item active" href="dashboard.html">Dashboard</a>
-        <a class="nav-item" href="#">Projects</a>
-        <a class="nav-item" href="#">Agents</a>
-        <a class="nav-item" href="#">Users</a>
-        <a class="nav-item" href="#">Logs</a>
-        <a class="nav-item" href="#">Settings</a> -->
-
-        <a class="nav-item active" href="dashboard.html">Dashboard</a>
-        <a class="nav-item" href="projects.html">Projects</a>
-        <a class="nav-item" href="agents.html">Agents</a>
-        <a class="nav-item" href="users.html">Users</a>
-        <a class="nav-item" href="logs.html">Logs</a>
-        <a class="nav-item" href="settings.html">Settings</a>
-
-        <div class="sidebar-bottom">
-            <div class="user-info">
-                <div class="user-avatar" id="avatar-initials">A</div>
-                <div>
-                    <div class="user-name" id="user-name">Loading...</div>
-                    <div class="user-role" id="user-role">—</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN -->
     <div class="main">
-        <div class="page-title">Dashboard</div>
+        <div class="page-title" style="margin-bottom:24px">Dashboard</div>
 
-        <!-- KPIs -->
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-val" id="kpi-projects">—</div>
-                <div class="kpi-label">Active Projects</div>
+                <div class="kpi-label">Projects</div>
                 <div class="kpi-badge">Total</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-val" id="kpi-agents">—</div>
                 <div class="kpi-label">Agents</div>
-                <div class="kpi-badge">Online</div>
+                <div class="kpi-badge">Registered</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-val" id="kpi-tasks">—</div>
@@ -419,264 +42,144 @@
                 <div class="kpi-badge">All sprints</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-val">Agile</div>
-                <div class="kpi-label">Methodology</div>
-                <div class="kpi-badge">Scrum</div>
+                <div class="kpi-val" id="kpi-done">—</div>
+                <div class="kpi-label">Done</div>
+                <div class="kpi-badge">Completed</div>
             </div>
         </div>
 
-        <!-- PROJECTS + AGENTS -->
         <div class="grid-2">
-
-            <!-- PROJECTS -->
             <div class="card">
-                <div class="section-title">Projects</div>
-                <button class="add-btn" onclick="openModal('project')">+ New Project</button>
+                <div class="section-title">Recent Projects</div>
+                <button class="add-btn-sm" onclick="location.href='projects.html'">+ New Project</button>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Priority</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Name</th><th>Priority</th><th>Status</th></tr></thead>
                     <tbody id="projects-list">
                         <tr><td colspan="3" style="color:var(--muted)">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- AGENTS -->
             <div class="card">
                 <div class="section-title">Agents</div>
-                <button class="add-btn" onclick="openModal('agent')">+ New Agent</button>
+                <button class="add-btn-sm" onclick="location.href='agents.html'">+ New Agent</button>
                 <div class="agent-list" id="agents-list">
                     <div style="color:var(--muted);font-size:13px">Loading...</div>
                 </div>
             </div>
-
         </div>
     </div>
+</div>
 
-    <!-- MODAL PROJECT -->
-    <div class="modal-overlay" id="modal-project">
-        <div class="modal">
-            <div class="modal-title">Create Project</div>
-            <div class="form-group">
-                <label>Project Name</label>
-                <input type="text" id="p-name" placeholder="NexaForge Platform">
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="p-desc" placeholder="Project description..."></textarea>
-            </div>
-            <div class="form-group">
-                <label>Priority</label>
-                <select id="p-priority">
-                    <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                </select>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeModal('project')">Cancel</button>
-                <button class="btn-confirm" onclick="createProject()">Create</button>
-            </div>
+<!-- Modals -->
+<div class="modal-overlay" id="modal-project">
+    <div class="modal">
+        <div class="modal-title">Create Project</div>
+        <div class="form-group"><label>Name</label><input type="text" id="p-name" placeholder="My Project"></div>
+        <div class="form-group"><label>Description</label><textarea id="p-desc" placeholder="Description..."></textarea></div>
+        <div class="form-group"><label>Priority</label>
+            <select id="p-priority">
+                <option value="low">Low</option><option value="medium" selected>Medium</option>
+                <option value="high">High</option><option value="critical">Critical</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('project')">Cancel</button>
+            <button class="btn-confirm" onclick="createProject()">Create</button>
         </div>
     </div>
+</div>
 
-    <!-- MODAL AGENT -->
-    <div class="modal-overlay" id="modal-agent">
-        <div class="modal">
-            <div class="modal-title">Create Agent</div>
-            <div class="form-group">
-                <label>Agent Name</label>
-                <input type="text" id="a-name" placeholder="Atlas">
-            </div>
-            <div class="form-group">
-                <label>Agent Type</label>
-                <select id="a-type">
-                    <option value="backend">Backend</option>
-                    <option value="frontend">Frontend</option>
-                    <option value="database">Database</option>
-                    <option value="devops">DevOps</option>
-                    <option value="manager">Manager</option>
-                </select>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeModal('agent')">Cancel</button>
-                <button class="btn-confirm" onclick="createAgent()">Create</button>
-            </div>
+<div class="modal-overlay" id="modal-agent">
+    <div class="modal">
+        <div class="modal-title">Create Agent</div>
+        <div class="form-group"><label>Name</label><input type="text" id="a-name" placeholder="Atlas"></div>
+        <div class="form-group"><label>Type</label>
+            <select id="a-type">
+                <option value="backend">Backend</option><option value="frontend">Frontend</option>
+                <option value="database">Database</option><option value="devops">DevOps</option>
+                <option value="manager">Manager</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('agent')">Cancel</button>
+            <button class="btn-confirm" onclick="createAgent()">Create</button>
         </div>
     </div>
+</div>
 
-    <script>
-        // WebSocket connection
-            const ws = new WebSocket("ws://localhost:8000/ws/dashboard")
+<div class="ws-notif" id="ws-notif"></div>
 
-            ws.onopen = () => {
-                console.log("WebSocket connected ✅")
-            }
+<script src="../scripts/sidebar.js"></script>
+<script>
+    const API     = 'http://localhost:8000';
+    const headers = NexaAuth.headers;
 
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data)
-                console.log("WS message:", data)
+    function openModal(t)  { document.getElementById('modal-' + t).classList.add('open'); }
+    function closeModal(t) { document.getElementById('modal-' + t).classList.remove('open'); }
 
-                if (data.type === "task_updated") {
-                    // Show notification
-                    showNotification(`Task "${data.title}" → ${data.status}`)
-                    // Reload data
-                    loadProjects()
-                    loadAgents()
-                    loadTasks()
-                }
-            }
+    function wsNotify(msg) {
+        const el = document.getElementById('ws-notif');
+        el.textContent = msg; el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 3000);
+    }
 
-            ws.onclose = () => {
-                console.log("WebSocket disconnected")
-            }
+    async function loadProjects() {
+        const res = await fetch(`${API}/api/projects/`, { headers });
+        const data = await res.json();
+        document.getElementById('kpi-projects').textContent = data.length;
+        const tbody = document.getElementById('projects-list');
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted)">No projects yet</td></tr>'; return; }
+        tbody.innerHTML = data.slice(0,8).map(p => `
+            <tr style="cursor:pointer" onclick="location.href='project_detail.html?id=${p.id}'">
+                <td>${p.name}</td>
+                <td><span class="badge badge-${p.priority}">${p.priority}</span></td>
+                <td><span class="badge badge-${p.status}">${p.status.replace('_',' ')}</span></td>
+            </tr>`).join('');
+    }
 
-            function showNotification(msg) {
-                const notif = document.createElement("div")
-                notif.style.cssText = `
-                    position: fixed;
-                    bottom: 24px;
-                    right: 24px;
-                    background: var(--purple);
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 10px;
-                    font-size: 13px;
-                    z-index: 999;
-                    animation: fadeIn 0.3s ease;
-                `
-                notif.textContent = msg
-                document.body.appendChild(notif)
-                setTimeout(() => notif.remove(), 3000)
-            }
-    </script>
+    async function loadAgents() {
+        const res  = await fetch(`${API}/api/agents/`, { headers });
+        const data = await res.json();
+        document.getElementById('kpi-agents').textContent = data.length;
+        const list = document.getElementById('agents-list');
+        if (!data.length) { list.innerHTML = '<div style="color:var(--muted);font-size:13px">No agents yet</div>'; return; }
+        list.innerHTML = data.map(a => `
+            <div class="agent-item">
+                <div class="agent-avatar av-${a.agent_type}" style="width:36px;height:36px;font-size:12px;font-weight:700;color:#fff">${a.name.slice(0,2).toUpperCase()}</div>
+                <div><div class="agent-name">${a.name}</div><div class="agent-type">${a.agent_type}</div></div>
+                <span class="dot dot-${a.status}" style="margin-left:auto"></span>
+            </div>`).join('');
+    }
 
-    <script>
-        const API = "http://localhost:8000"
-        const token = localStorage.getItem('token')
+    async function loadTasks() {
+        const res  = await fetch(`${API}/api/tasks/`, { headers });
+        const data = await res.json();
+        document.getElementById('kpi-tasks').textContent = data.length;
+        document.getElementById('kpi-done').textContent  = data.filter(t => t.status === 'done').length;
+    }
 
-        if (!token) window.location.href = 'login.html'
+    async function createProject() {
+        const res = await fetch(`${API}/api/projects/`, { method:'POST', headers, body: JSON.stringify({ name: document.getElementById('p-name').value, description: document.getElementById('p-desc').value, priority: document.getElementById('p-priority').value }) });
+        if (res.ok) { closeModal('project'); loadProjects(); }
+    }
 
-        // Decode JWT to get user info
-        function parseJWT(token) {
-            const base64 = token.split('.')[1]
-            return JSON.parse(atob(base64))
-        }
+    async function createAgent() {
+        const res = await fetch(`${API}/api/agents/`, { method:'POST', headers, body: JSON.stringify({ name: document.getElementById('a-name').value, agent_type: document.getElementById('a-type').value }) });
+        if (res.ok) { closeModal('agent'); loadAgents(); }
+    }
 
-        const payload = parseJWT(token)
-        document.getElementById('user-role').textContent = payload.role
-        document.getElementById('user-name').textContent = payload.role
+    const ws = new WebSocket('ws://localhost:8000/ws/dashboard');
+    ws.onmessage = e => {
+        const d = JSON.parse(e.data);
+        if (d.type === 'task_updated')      { wsNotify(`Task "${d.title}" → ${d.status}`); loadTasks(); }
+        if (d.type === 'project_started')   { wsNotify(`Project "${d.name}" started!`); loadProjects(); }
+        if (d.type === 'project_approved')  { wsNotify(`Project "${d.name}" approved`); loadProjects(); }
+        if (d.type === 'project_submitted') { wsNotify(`Project "${d.name}" submitted for approval`); loadProjects(); }
+    };
 
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-
-        // Load data
-        async function loadProjects() {
-            const res = await fetch(`${API}/api/projects/`, { headers })
-            const data = await res.json()
-            document.getElementById('kpi-projects').textContent = data.length
-            const tbody = document.getElementById('projects-list')
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted)">No projects yet</td></tr>'
-                return
-            }
-            tbody.innerHTML = data.map(p => `
-                <tr>
-                    <td>${p.name}</td>
-                    <td><span class="badge badge-draft">${p.priority}</span></td>
-                    <td><span class="badge badge-${p.status === 'active' ? 'active' : 'draft'}">${p.status}</span></td>
-                </tr>
-            `).join('')
-        }
-
-        async function loadAgents() {
-            const res = await fetch(`${API}/api/agents/`, { headers })
-            const data = await res.json()
-            document.getElementById('kpi-agents').textContent = data.length
-            const list = document.getElementById('agents-list')
-            if (data.length === 0) {
-                list.innerHTML = '<div style="color:var(--muted);font-size:13px">No agents yet</div>'
-                return
-            }
-            list.innerHTML = data.map(a => `
-                <div class="agent-item">
-                    <div class="agent-avatar av-${a.agent_type}">${a.name.slice(0,2).toUpperCase()}</div>
-                    <div>
-                        <div class="agent-name">${a.name}</div>
-                        <div class="agent-type">${a.agent_type}</div>
-                    </div>
-                    <div class="${a.status === 'idle' ? 'online-dot' : 'offline-dot'}"></div>
-                </div>
-            `).join('')
-        }
-
-        async function loadTasks() {
-            const res = await fetch(`${API}/api/tasks/`, { headers })
-            const data = await res.json()
-            document.getElementById('kpi-tasks').textContent = data.length
-        }
-
-        // Modals
-        function openModal(type) {
-            document.getElementById('modal-' + type).classList.add('open')
-        }
-
-        function closeModal(type) {
-            document.getElementById('modal-' + type).classList.remove('open')
-        }
-
-        // Create project
-        async function createProject() {
-            const res = await fetch(`${API}/api/projects/`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: document.getElementById('p-name').value,
-                    description: document.getElementById('p-desc').value,
-                    priority: document.getElementById('p-priority').value
-                })
-            })
-            if (res.ok) {
-                closeModal('project')
-                loadProjects()
-            }
-        }
-
-        // Create agent
-        async function createAgent() {
-            const res = await fetch(`${API}/api/agents/`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: document.getElementById('a-name').value,
-                    agent_type: document.getElementById('a-type').value
-                })
-            })
-            if (res.ok) {
-                closeModal('agent')
-                loadAgents()
-            }
-        }
-
-        // Init
-        loadProjects()
-        loadAgents()
-        loadTasks()
-
-        // Auto refresh every 10 seconds
-        setInterval(() => {
-            loadProjects()
-            loadAgents()
-            loadTasks()
-        }, 10000)
-    </script>
+    loadProjects(); loadAgents(); loadTasks();
+    setInterval(() => { loadProjects(); loadAgents(); loadTasks(); }, 15000);
+</script>
 </body>
 </html>

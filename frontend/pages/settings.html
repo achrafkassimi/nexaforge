@@ -6,505 +6,237 @@
     <title>NexaForge — Settings</title>
     <link rel="stylesheet" href="../styles/globals.css">
     <style>
-        body { display: flex; min-height: 100vh; align-items: flex-start; }
+        .settings-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
 
-        .sidebar {
-            width: 240px; min-height: 100vh;
-            background: var(--bg2); border-right: 1px solid var(--border);
-            padding: 24px 0; flex-shrink: 0;
-        }
-        .sidebar-logo {
-            display: flex; align-items: center; gap: 10px;
-            padding: 0 20px 24px; border-bottom: 1px solid var(--border);
-        }
-        .logo-mark {
-            width: 32px; height: 32px; background: var(--purple);
-            border-radius: 8px; display: flex; align-items: center;
-            justify-content: center; font-weight: 800;
-        }
-        .logo-name { font-weight: 700; font-size: 16px; }
-        .nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 11px 20px; font-size: 14px; color: var(--muted);
-            cursor: pointer; transition: all 0.15s;
-            text-decoration: none; border-left: 2px solid transparent;
-        }
-        .nav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
-        .nav-item.active { color: var(--purple2); background: rgba(139,92,246,0.1); border-left-color: var(--purple); }
-
-        .main { flex: 1; padding: 32px; min-height: 100vh; background: var(--bg); }
-        .page-title { font-size: 22px; font-weight: 700; margin-bottom: 32px; }
-
-        .settings-layout {
-            display: grid; grid-template-columns: 200px 1fr;
-            gap: 24px; align-items: start;
-        }
-
-        .settings-nav {
-            background: var(--bg2); border: 1px solid var(--border);
-            border-radius: 14px; overflow: hidden;
-        }
-        .snav-item {
-            padding: 12px 16px; font-size: 13px; color: var(--muted);
-            cursor: pointer; transition: all 0.15s;
-            border-left: 2px solid transparent;
-        }
+        .settings-nav { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .snav-item { padding: 12px 16px; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; }
         .snav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
-        .snav-item.active {
-            color: var(--purple2); background: rgba(139,92,246,0.08);
-            border-left-color: var(--purple);
-        }
+        .snav-item.active { color: var(--purple2); background: rgba(139,92,246,0.08); border-left-color: var(--purple); }
 
         .settings-content { display: flex; flex-direction: column; gap: 20px; }
-
-        .setting-section {
-            background: var(--bg2); border: 1px solid var(--border);
-            border-radius: 14px; padding: 24px;
-            display: none;
-        }
+        .setting-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; display: none; }
         .setting-section.active { display: block; }
 
-        .section-title {
-            font-size: 16px; font-weight: 600;
-            margin-bottom: 20px; padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 
-        .setting-row {
-            display: flex; align-items: center;
-            justify-content: space-between;
-            padding: 14px 0;
-            border-bottom: 1px solid rgba(139,92,246,0.06);
-        }
+        .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(139,92,246,0.06); }
         .setting-row:last-child { border-bottom: none; padding-bottom: 0; }
-
-        .setting-info { flex: 1; }
+        .setting-info  { flex: 1; }
         .setting-label { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-        .setting-desc { font-size: 12px; color: var(--muted); }
-
+        .setting-desc  { font-size: 12px; color: var(--muted); }
         .setting-control { flex-shrink: 0; margin-left: 20px; }
 
-        select {
-            padding: 8px 12px; background: var(--bg);
-            border: 1px solid var(--border); border-radius: 8px;
-            color: var(--text); font-size: 13px; outline: none;
-            cursor: pointer;
-        }
-
-        /* Toggle */
-        .toggle {
-            position: relative; width: 40px; height: 22px;
-            display: inline-block; cursor: pointer;
-        }
+        .toggle { position: relative; width: 40px; height: 22px; display: inline-block; cursor: pointer; }
         .toggle input { opacity: 0; width: 0; height: 0; }
-        .toggle-track {
-            position: absolute; inset: 0;
-            background: var(--border); border-radius: 11px;
-            transition: background 0.2s;
-        }
+        .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 11px; transition: background 0.2s; }
         .toggle input:checked + .toggle-track { background: var(--purple); }
-        .toggle-thumb {
-            position: absolute; top: 3px; left: 3px;
-            width: 16px; height: 16px; border-radius: 50%;
-            background: white; transition: transform 0.2s;
-        }
+        .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform 0.2s; }
         .toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
 
-        .save-btn {
-            padding: 10px 24px; background: var(--purple);
-            border: none; border-radius: 10px; color: white;
-            font-size: 14px; cursor: pointer; width: auto;
-            margin-top: 20px; transition: opacity 0.2s;
-        }
+        .save-btn { padding: 10px 24px; background: var(--purple); border: none; border-radius: 10px; color: white; font-size: 14px; cursor: pointer; width: auto; margin-top: 20px; transition: opacity 0.2s; }
         .save-btn:hover { opacity: 0.85; }
 
-        /* Danger zone */
-        .danger-zone {
-            border-color: rgba(248,113,113,0.3) !important;
-        }
+        .danger-zone { border-color: rgba(248,113,113,0.3) !important; }
         .danger-zone .section-title { color: #f87171; }
 
-        .btn-danger {
-            padding: 9px 18px; background: transparent;
-            border: 1px solid #f87171; border-radius: 8px;
-            color: #f87171; font-size: 13px; cursor: pointer;
-            width: auto; transition: all 0.2s;
-        }
-        .btn-danger:hover { background: rgba(248,113,113,0.1); }
-
-        .toast {
-            position: fixed; bottom: 24px; right: 24px;
-            background: var(--purple); color: white;
-            padding: 12px 20px; border-radius: 10px;
-            font-size: 13px; z-index: 999;
-            display: none;
-        }
-        .toast.show { display: block; }
-
-        .api-key-wrap {
-            display: flex; gap: 8px; align-items: center;
-        }
-        .api-key-wrap input {
-            flex: 1; padding: 9px 12px;
-            background: var(--bg); border: 1px solid var(--border);
-            border-radius: 8px; color: var(--text);
-            font-size: 13px; outline: none; font-family: monospace;
-        }
-        .btn-copy {
-            padding: 9px 14px; background: transparent;
-            border: 1px solid var(--border); border-radius: 8px;
-            color: var(--muted); font-size: 12px; cursor: pointer;
-            width: auto; transition: all 0.15s;
-        }
+        .api-key-wrap { display: flex; gap: 8px; align-items: center; }
+        .api-key-wrap input { flex: 1; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: monospace; }
+        .btn-copy { padding: 9px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer; width: auto; transition: all 0.15s; }
         .btn-copy:hover { border-color: var(--purple); color: var(--purple2); }
     </style>
 </head>
 <body>
+<div class="app-layout">
+    <div id="app-sidebar"></div>
+    <div class="main">
+        <div class="page-title" style="margin-bottom:32px">Settings</div>
 
-<div class="sidebar">
-    <div class="sidebar-logo">
-        <div class="logo-mark">N</div>
-        <div class="logo-name">NexaForge</div>
-    </div>
-    <a class="nav-item" href="dashboard.html">Dashboard</a>
-    <a class="nav-item" href="projects.html">Projects</a>
-    <a class="nav-item" href="agents.html">Agents</a>
-    <a class="nav-item" href="users.html">Users</a>
-    <a class="nav-item" href="logs.html">Logs</a>
-    <a class="nav-item active" href="settings.html">Settings</a>
-</div>
-
-<div class="main">
-    <div class="page-title">Settings</div>
-
-    <div class="settings-layout">
-
-        <!-- Settings Nav -->
-        <div class="settings-nav">
-            <div class="snav-item active" onclick="showSection('general', this)">General</div>
-            <div class="snav-item" onclick="showSection('agents', this)">AI Agents</div>
-            <div class="snav-item" onclick="showSection('notifications', this)">Notifications</div>
-            <div class="snav-item" onclick="showSection('security', this)">Security</div>
-            <div class="snav-item" onclick="showSection('danger', this)">Danger Zone</div>
-        </div>
-
-        <!-- Settings Content -->
-        <div class="settings-content">
-
-            <!-- GENERAL -->
-            <div class="setting-section active" id="section-general">
-                <div class="section-title">General</div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Platform name</div>
-                        <div class="setting-desc">Displayed in browser tab and emails</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="text" id="platform-name" value="NexaForge"
-                            style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;width:180px">
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Timezone</div>
-                        <div class="setting-desc">Used for timestamps and scheduling</div>
-                    </div>
-                    <div class="setting-control">
-                        <select id="timezone">
-                            <option value="UTC">UTC</option>
-                            <option value="Africa/Casablanca" selected>Africa/Casablanca</option>
-                            <option value="Europe/Paris">Europe/Paris</option>
-                            <option value="America/New_York">America/New_York</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Language</div>
-                        <div class="setting-desc">Interface language</div>
-                    </div>
-                    <div class="setting-control">
-                        <select id="language">
-                            <option value="en" selected>English</option>
-                            <option value="fr">Français</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="saveSettings('general')">Save changes</button>
+        <div class="settings-layout">
+            <div class="settings-nav">
+                <div class="snav-item active" onclick="showSection('general', this)">General</div>
+                <div class="snav-item" onclick="showSection('agents', this)">AI Agents</div>
+                <div class="snav-item" onclick="showSection('notifications', this)">Notifications</div>
+                <div class="snav-item" onclick="showSection('security', this)">Security</div>
+                <div class="snav-item" onclick="showSection('danger', this)">Danger Zone</div>
             </div>
 
-            <!-- AI AGENTS -->
-            <div class="setting-section" id="section-agents">
-                <div class="section-title">AI Agents</div>
+            <div class="settings-content">
 
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">LLM Provider</div>
-                        <div class="setting-desc">Default provider for all agents</div>
+                <!-- GENERAL -->
+                <div class="setting-section active" id="section-general">
+                    <div class="section-title">General</div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Platform name</div><div class="setting-desc">Displayed in browser tab and emails</div></div>
+                        <div class="setting-control"><input type="text" id="platform-name" value="NexaForge" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;width:180px"></div>
                     </div>
-                    <div class="setting-control">
-                        <select id="llm-provider" onchange="toggleApiKey()">
-                            <option value="local" selected>Ollama (local)</option>
-                            <option value="api">Claude API</option>
-                            <option value="hybrid">Hybrid (API + fallback)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-row" id="api-key-row" style="display:none">
-                    <div class="setting-info">
-                        <div class="setting-label">Anthropic API Key</div>
-                        <div class="setting-desc">Required for Claude API mode</div>
-                    </div>
-                    <div class="setting-control">
-                        <div class="api-key-wrap">
-                            <input type="password" id="api-key" placeholder="sk-ant-...">
-                            <button class="btn-copy" onclick="toggleApiKeyVisibility()">Show</button>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Timezone</div><div class="setting-desc">Used for timestamps and scheduling</div></div>
+                        <div class="setting-control">
+                            <select id="timezone" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;cursor:pointer">
+                                <option value="UTC">UTC</option>
+                                <option value="Africa/Casablanca" selected>Africa/Casablanca</option>
+                                <option value="Europe/Paris">Europe/Paris</option>
+                                <option value="America/New_York">America/New_York</option>
+                            </select>
                         </div>
                     </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Language</div><div class="setting-desc">Interface language</div></div>
+                        <div class="setting-control">
+                            <select id="language" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;cursor:pointer">
+                                <option value="en" selected>English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveSettings('general')">Save changes</button>
                 </div>
 
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Local model</div>
-                        <div class="setting-desc">Ollama model to use</div>
+                <!-- AI AGENTS -->
+                <div class="setting-section" id="section-agents">
+                    <div class="section-title">AI Agents</div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">LLM Provider</div><div class="setting-desc">Default provider for all agents</div></div>
+                        <div class="setting-control">
+                            <select id="llm-provider" onchange="toggleApiKey()" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;cursor:pointer">
+                                <option value="local" selected>Ollama (local)</option>
+                                <option value="api">Claude API</option>
+                                <option value="hybrid">Hybrid (API + fallback)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="setting-control">
-                        <select id="local-model">
-                            <option value="llama3.2" selected>llama3.2</option>
-                            <option value="mistral">mistral</option>
-                            <option value="codellama">codellama</option>
-                        </select>
+                    <div class="setting-row" id="api-key-row" style="display:none">
+                        <div class="setting-info"><div class="setting-label">Anthropic API Key</div><div class="setting-desc">Required for Claude API mode</div></div>
+                        <div class="setting-control">
+                            <div class="api-key-wrap">
+                                <input type="password" id="api-key" placeholder="sk-ant-...">
+                                <button class="btn-copy" onclick="toggleApiKeyVisibility()">Show</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Local model</div><div class="setting-desc">Ollama model to use</div></div>
+                        <div class="setting-control">
+                            <select id="local-model" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;cursor:pointer">
+                                <option value="llama3.2" selected>llama3.2</option>
+                                <option value="mistral">mistral</option>
+                                <option value="codellama">codellama</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Heartbeat interval</div><div class="setting-desc">How often agents check for tasks</div></div>
+                        <div class="setting-control">
+                            <select id="heartbeat" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;cursor:pointer">
+                                <option value="30">30 seconds (dev)</option>
+                                <option value="60" selected>1 minute</option>
+                                <option value="300">5 minutes</option>
+                                <option value="600">10 minutes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="save-btn" onclick="saveSettings('agents')">Save changes</button>
+                </div>
+
+                <!-- NOTIFICATIONS -->
+                <div class="setting-section" id="section-notifications">
+                    <div class="section-title">Notifications</div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Task status changes</div><div class="setting-desc">Notify when agent updates a task</div></div>
+                        <div class="setting-control"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Blocker alerts</div><div class="setting-desc">Notify when agent posts a BLOCKER</div></div>
+                        <div class="setting-control"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Sprint completions</div><div class="setting-desc">Notify when a sprint is closed</div></div>
+                        <div class="setting-control"><label class="toggle"><input type="checkbox"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">New user registrations</div><div class="setting-desc">Notify when someone registers</div></div>
+                        <div class="setting-control"><label class="toggle"><input type="checkbox"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    </div>
+                    <button class="save-btn" onclick="saveSettings('notifications')">Save changes</button>
+                </div>
+
+                <!-- SECURITY -->
+                <div class="setting-section" id="section-security">
+                    <div class="section-title">Security</div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Session duration</div><div class="setting-desc">How long JWT tokens are valid</div></div>
+                        <div class="setting-control">
+                            <select id="session-duration" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;cursor:pointer">
+                                <option value="60">1 hour</option>
+                                <option value="1440" selected>24 hours</option>
+                                <option value="10080">7 days</option>
+                                <option value="43200">30 days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Require strong passwords</div><div class="setting-desc">Min 8 chars, uppercase, number</div></div>
+                        <div class="setting-control"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Log all API requests</div><div class="setting-desc">Store all requests in activity logs</div></div>
+                        <div class="setting-control"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    </div>
+                    <button class="save-btn" onclick="saveSettings('security')">Save changes</button>
+                </div>
+
+                <!-- DANGER ZONE -->
+                <div class="setting-section danger-zone" id="section-danger">
+                    <div class="section-title">Danger Zone</div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Clear all tasks</div><div class="setting-desc">Delete all tasks from all sprints</div></div>
+                        <div class="setting-control"><button class="btn btn-danger" onclick="confirmAction('clear-tasks')">Clear tasks</button></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Reset demo data</div><div class="setting-desc">Restore default projects and agents</div></div>
+                        <div class="setting-control"><button class="btn btn-danger" onclick="confirmAction('reset-demo')">Reset demo</button></div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-info"><div class="setting-label">Logout everywhere</div><div class="setting-desc">Invalidate all active sessions</div></div>
+                        <div class="setting-control"><button class="btn btn-danger" onclick="nexaLogout()">Logout all</button></div>
                     </div>
                 </div>
 
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Heartbeat interval</div>
-                        <div class="setting-desc">How often agents check for tasks</div>
-                    </div>
-                    <div class="setting-control">
-                        <select id="heartbeat">
-                            <option value="30">30 seconds (dev)</option>
-                            <option value="60" selected>1 minute</option>
-                            <option value="300">5 minutes</option>
-                            <option value="600">10 minutes</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="saveSettings('agents')">Save changes</button>
             </div>
-
-            <!-- NOTIFICATIONS -->
-            <div class="setting-section" id="section-notifications">
-                <div class="section-title">Notifications</div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Task status changes</div>
-                        <div class="setting-desc">Notify when agent updates a task</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <div class="toggle-track"></div>
-                            <div class="toggle-thumb"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Blocker alerts</div>
-                        <div class="setting-desc">Notify when agent posts a BLOCKER</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <div class="toggle-track"></div>
-                            <div class="toggle-thumb"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Sprint completions</div>
-                        <div class="setting-desc">Notify when a sprint is closed</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle">
-                            <input type="checkbox">
-                            <div class="toggle-track"></div>
-                            <div class="toggle-thumb"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">New user registrations</div>
-                        <div class="setting-desc">Notify when someone registers</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle">
-                            <input type="checkbox">
-                            <div class="toggle-track"></div>
-                            <div class="toggle-thumb"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="saveSettings('notifications')">Save changes</button>
-            </div>
-
-            <!-- SECURITY -->
-            <div class="setting-section" id="section-security">
-                <div class="section-title">Security</div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Session duration</div>
-                        <div class="setting-desc">How long JWT tokens are valid</div>
-                    </div>
-                    <div class="setting-control">
-                        <select id="session-duration">
-                            <option value="60">1 hour</option>
-                            <option value="1440" selected>24 hours</option>
-                            <option value="10080">7 days</option>
-                            <option value="43200">30 days</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Require strong passwords</div>
-                        <div class="setting-desc">Min 8 chars, uppercase, number</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <div class="toggle-track"></div>
-                            <div class="toggle-thumb"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Log all API requests</div>
-                        <div class="setting-desc">Store all requests in activity logs</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <div class="toggle-track"></div>
-                            <div class="toggle-thumb"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="save-btn" onclick="saveSettings('security')">Save changes</button>
-            </div>
-
-            <!-- DANGER ZONE -->
-            <div class="setting-section danger-zone" id="section-danger">
-                <div class="section-title">Danger Zone</div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Clear all tasks</div>
-                        <div class="setting-desc">Delete all tasks from all sprints</div>
-                    </div>
-                    <div class="setting-control">
-                        <button class="btn-danger" onclick="confirmAction('clear-tasks')">Clear tasks</button>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Reset demo data</div>
-                        <div class="setting-desc">Restore default projects and agents</div>
-                    </div>
-                    <div class="setting-control">
-                        <button class="btn-danger" onclick="confirmAction('reset-demo')">Reset demo</button>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-label">Logout everywhere</div>
-                        <div class="setting-desc">Invalidate all active sessions</div>
-                    </div>
-                    <div class="setting-control">
-                        <button class="btn-danger" onclick="logoutEverywhere()">Logout all</button>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>
 
-<div class="toast" id="toast">Settings saved ✓</div>
-
+<script src="../scripts/sidebar.js"></script>
 <script>
-    const token = localStorage.getItem('token')
-    if (!token) window.location.href = 'login.html'
-
     function showSection(id, el) {
-        document.querySelectorAll('.setting-section').forEach(s => s.classList.remove('active'))
-        document.querySelectorAll('.snav-item').forEach(s => s.classList.remove('active'))
-        document.getElementById('section-' + id).classList.add('active')
-        el.classList.add('active')
+        document.querySelectorAll('.setting-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.snav-item').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + id).classList.add('active');
+        el.classList.add('active');
     }
 
     function toggleApiKey() {
-        const provider = document.getElementById('llm-provider').value
+        const provider = document.getElementById('llm-provider').value;
         document.getElementById('api-key-row').style.display =
-            (provider === 'api' || provider === 'hybrid') ? 'flex' : 'none'
+            (provider === 'api' || provider === 'hybrid') ? 'flex' : 'none';
     }
 
     function toggleApiKeyVisibility() {
-        const input = document.getElementById('api-key')
-        const btn = event.currentTarget
-        if (input.type === 'password') {
-            input.type = 'text'
-            btn.textContent = 'Hide'
-        } else {
-            input.type = 'password'
-            btn.textContent = 'Show'
-        }
+        const input = document.getElementById('api-key');
+        const btn   = event.currentTarget;
+        if (input.type === 'password') { input.type = 'text';     btn.textContent = 'Hide'; }
+        else                           { input.type = 'password'; btn.textContent = 'Show'; }
     }
 
     function saveSettings(section) {
-        showToast(`${section} settings saved ✓`)
+        showToast(`${section} settings saved`);
     }
 
     function confirmAction(action) {
-        if (confirm(`Are you sure? This action cannot be undone.`)) {
-            showToast(`Action "${action}" executed`)
+        if (confirm('Are you sure? This action cannot be undone.')) {
+            showToast(`Action "${action}" executed`);
         }
-    }
-
-    function logoutEverywhere() {
-        if (confirm('Logout from all sessions?')) {
-            localStorage.removeItem('token')
-            window.location.href = 'login.html'
-        }
-    }
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast')
-        toast.textContent = msg
-        toast.classList.add('show')
-        setTimeout(() => toast.classList.remove('show'), 2500)
     }
 </script>
 </body>

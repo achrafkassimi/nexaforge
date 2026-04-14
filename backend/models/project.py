@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, timezone
 import uuid
@@ -10,7 +10,12 @@ class Project(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     description = Column(String)
-    status = Column(Enum("draft", "active", "review", "done", "archived", name="project_status"), default="draft")
+    cahier_de_charge = Column(Text)
+    rejection_note = Column(String)
+    status = Column(
+        Enum("draft", "pending_approval", "approved", "active", "review", "done", "archived", name="project_status"),
+        default="draft"
+    )
     priority = Column(Enum("low", "medium", "high", "critical", name="priority_level"), default="medium")
     deadline = Column(DateTime(timezone=True))
     manager_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))

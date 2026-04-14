@@ -6,6 +6,7 @@ from typing import Optional
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    cahier_de_charge: Optional[str] = None
     priority: Optional[str] = "medium"
     deadline: Optional[datetime] = None
 
@@ -13,6 +14,8 @@ class ProjectOut(BaseModel):
     id: UUID
     name: str
     description: Optional[str]
+    cahier_de_charge: Optional[str]
+    rejection_note: Optional[str]
     status: str
     priority: str
     deadline: Optional[datetime]

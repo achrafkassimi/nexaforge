@@ -1,1 +1,1 @@
-from . import auth, projects, tasks, agents, sprints, users
+from . import auth, projects, tasks, agents, sprints, users, files

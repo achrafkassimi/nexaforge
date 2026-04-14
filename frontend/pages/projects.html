@@ -6,377 +6,413 @@
     <title>NexaForge — Projects</title>
     <link rel="stylesheet" href="../styles/globals.css">
     <style>
-        body { display: flex; min-height: 100vh; align-items: flex-start; }
+        /* Pipeline */
+        .pipeline { display:flex; background:var(--bg2); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:28px; }
+        .pipe-step { flex:1; padding:14px 10px; text-align:center; border-right:1px solid var(--border); }
+        .pipe-step:last-child { border-right:none; }
+        .pipe-num  { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+        .pipe-name { font-size:12px; font-weight:600; color:var(--text); margin:2px 0; }
+        .pipe-sub  { font-size:10px; color:var(--muted); }
+        .pipe-count{ font-size:20px; font-weight:700; color:var(--purple2); }
 
-        .sidebar {
-            width: 240px; min-height: 100vh;
-            background: var(--bg2);
-            border-right: 1px solid var(--border);
-            padding: 24px 0; flex-shrink: 0;
-        }
-        .sidebar-logo {
-            display: flex; align-items: center; gap: 10px;
-            padding: 0 20px 24px;
-            border-bottom: 1px solid var(--border);
-        }
-        .logo-mark {
-            width: 32px; height: 32px; background: var(--purple);
-            border-radius: 8px; display: flex; align-items: center;
-            justify-content: center; font-weight: 800;
-        }
-        .logo-name { font-weight: 700; font-size: 16px; }
-        .nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 11px 20px; font-size: 14px; color: var(--muted);
-            cursor: pointer; transition: all 0.15s;
-            text-decoration: none; border-left: 2px solid transparent;
-        }
-        .nav-item:hover { color: var(--text); background: rgba(139,92,246,0.06); }
-        .nav-item.active { color: var(--purple2); background: rgba(139,92,246,0.1); border-left-color: var(--purple); }
+        /* Project cards */
+        .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; }
+        .project-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:20px; transition:border-color .2s; cursor:pointer; }
+        .project-card:hover { border-color:var(--purple); }
+        .project-card.pending  { border-color:rgba(251,191,36,.3); }
+        .project-card.rejected { border-color:rgba(248,113,113,.3); }
+        .pc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+        .pc-name   { font-size:15px; font-weight:600; }
+        .pc-desc   { font-size:13px; color:var(--muted); margin-bottom:10px; line-height:1.5; }
+        .pc-cdc    { font-size:12px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px; margin-bottom:10px; max-height:52px; overflow:hidden; line-height:1.5; position:relative; }
+        .pc-cdc::after { content:''; position:absolute; bottom:0; left:0; right:0; height:18px; background:linear-gradient(transparent,var(--bg)); }
+        .pc-cdc-empty { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:10px; }
+        .rejection-note { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.2); border-radius:6px; padding:8px 10px; font-size:12px; color:#f87171; margin-bottom:10px; }
+        .pc-footer { display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+        .pc-date   { font-size:11px; color:var(--muted); }
+        .pc-actions{ display:flex; gap:6px; flex-wrap:wrap; }
 
-        .main { flex: 1; padding: 32px; min-height: 100vh; background: var(--bg); }
-
-        .page-header {
-            display: flex; align-items: center;
-            justify-content: space-between; margin-bottom: 24px;
-        }
-        .page-title { font-size: 22px; font-weight: 700; }
-
-        .add-btn {
-            padding: 10px 20px; background: var(--purple);
-            border: none; border-radius: 10px; color: white;
-            font-size: 14px; cursor: pointer; width: auto;
-        }
-
-        .filters {
-            display: flex; gap: 10px; margin-bottom: 20px;
-        }
-        .filter-btn {
-            padding: 7px 16px; border-radius: 8px;
-            border: 1px solid var(--border);
-            background: transparent; color: var(--muted);
-            font-size: 13px; cursor: pointer; width: auto;
-            transition: all 0.15s;
-        }
-        .filter-btn.active {
-            background: rgba(139,92,246,0.1);
-            border-color: var(--purple); color: var(--purple2);
-        }
-
-        .projects-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        .project-card {
-            background: var(--bg2); border: 1px solid var(--border);
-            border-radius: 14px; padding: 20px;
-            transition: border-color 0.2s; cursor: pointer;
-        }
-        .project-card:hover { border-color: var(--purple); }
-
-        .pc-header {
-            display: flex; justify-content: space-between;
-            align-items: flex-start; margin-bottom: 12px;
-        }
-        .pc-name { font-size: 15px; font-weight: 600; color: var(--text); }
-        .pc-desc {
-            font-size: 13px; color: var(--muted);
-            margin-bottom: 16px; line-height: 1.5;
-        }
-
-        .badge {
-            display: inline-block; font-size: 11px;
-            padding: 3px 10px; border-radius: 100px;
-        }
-        .badge-draft    { background: rgba(148,144,181,0.15); color: var(--muted); }
-        .badge-active   { background: rgba(74,222,128,0.15); color: #4ade80; }
-        .badge-review   { background: rgba(251,191,36,0.15); color: #fbbf24; }
-        .badge-done     { background: rgba(139,92,246,0.15); color: var(--purple2); }
-        .badge-low      { background: rgba(74,222,128,0.15); color: #4ade80; }
-        .badge-medium   { background: rgba(251,191,36,0.15); color: #fbbf24; }
-        .badge-high     { background: rgba(248,113,113,0.15); color: #f87171; }
-        .badge-critical { background: rgba(239,68,68,0.2); color: #ef4444; }
-
-        .pc-footer {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-top: 12px;
-            padding-top: 12px; border-top: 1px solid var(--border);
-        }
-        .pc-date { font-size: 11px; color: var(--muted2); }
-
-        .pc-actions { display: flex; gap: 8px; }
-        .btn-icon {
-            padding: 5px 10px; border-radius: 6px;
-            border: 1px solid var(--border); background: transparent;
-            color: var(--muted); font-size: 12px; cursor: pointer;
-            width: auto; transition: all 0.15s;
-        }
-        .btn-icon:hover { border-color: var(--purple); color: var(--purple2); }
-        .btn-icon.danger:hover { border-color: #f87171; color: #f87171; }
-
-        /* MODAL */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6); z-index: 100;
-            align-items: center; justify-content: center;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal {
-            background: var(--bg2); border: 1px solid var(--border);
-            border-radius: 20px; padding: 32px;
-            width: 100%; max-width: 460px;
-        }
-        .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-        label { font-size: 12px; color: var(--muted); }
-        select, textarea {
-            width: 100%; padding: 11px 14px;
-            background: var(--bg); border: 1px solid var(--border);
-            border-radius: 10px; color: var(--text);
-            font-size: 14px; outline: none; font-family: inherit;
-        }
-        textarea { resize: vertical; min-height: 80px; }
-        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-cancel {
-            flex: 1; padding: 11px; background: transparent;
-            border: 1px solid var(--border); border-radius: 10px;
-            color: var(--muted); cursor: pointer; font-size: 14px;
-        }
-        .btn-confirm {
-            flex: 1; padding: 11px; background: var(--purple);
-            border: none; border-radius: 10px; color: white;
-            cursor: pointer; font-size: 14px; font-weight: 500;
-        }
-
-        .empty-state {
-            text-align: center; padding: 60px 20px;
-            color: var(--muted); font-size: 14px;
-        }
-        .empty-state div { font-size: 32px; margin-bottom: 12px; }
+        /* AI generate button */
+        .btn-ai { background:rgba(139,92,246,.15); border:1px solid rgba(139,92,246,.3); color:var(--purple2); border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; width:auto; cursor:pointer; transition:all .15s; }
+        .btn-ai:hover { background:rgba(139,92,246,.25); }
+        .btn-ai:disabled { opacity:.5; cursor:not-allowed; }
+        .cdc-textarea { min-height:200px; font-size:13px; }
+        .ai-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+        .ai-hint { font-size:11px; color:var(--muted); }
     </style>
 </head>
 <body>
+<div class="app-layout">
+    <div id="app-sidebar"></div>
+    <div class="main">
+        <div class="page-header">
+            <div class="page-title">Projects</div>
+            <button class="add-btn" onclick="openCreateModal()">+ New Project</button>
+        </div>
 
-<div class="sidebar">
-    <div class="sidebar-logo">
-        <div class="logo-mark">N</div>
-        <div class="logo-name">NexaForge</div>
-    </div>
-    <a class="nav-item" href="dashboard.html">Dashboard</a>
-    <a class="nav-item active" href="projects.html">Projects</a>
-    <a class="nav-item" href="agents.html">Agents</a>
-    <a class="nav-item" href="users.html">Users</a>
-    <a class="nav-item" href="logs.html">Logs</a>
-    <a class="nav-item" href="settings.html">Settings</a>
-</div>
+        <!-- Workflow pipeline -->
+        <div class="pipeline">
+            <div class="pipe-step" id="pipe-draft">
+                <div class="pipe-num">Step 1</div>
+                <div class="pipe-name">Draft</div>
+                <div class="pipe-sub">Write CDC</div>
+            </div>
+            <div class="pipe-step" id="pipe-pending">
+                <div class="pipe-num">Step 2</div>
+                <div class="pipe-name">Pending</div>
+                <div class="pipe-sub">Admin reviews</div>
+            </div>
+            <div class="pipe-step" id="pipe-approved">
+                <div class="pipe-num">Step 3</div>
+                <div class="pipe-name">Approved</div>
+                <div class="pipe-sub">Ready to start</div>
+            </div>
+            <div class="pipe-step" id="pipe-active">
+                <div class="pipe-num">Step 4</div>
+                <div class="pipe-name">Active</div>
+                <div class="pipe-sub">Agents working</div>
+            </div>
+            <div class="pipe-step" id="pipe-done">
+                <div class="pipe-num">Step 5</div>
+                <div class="pipe-name">Done</div>
+                <div class="pipe-sub">Delivered</div>
+            </div>
+        </div>
 
-<div class="main">
-    <div class="page-header">
-        <div class="page-title">Projects</div>
-        <button class="add-btn" onclick="openModal()">+ New Project</button>
-    </div>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterProjects('all',this)">All</button>
+            <button class="filter-btn" onclick="filterProjects('draft',this)">Draft</button>
+            <button class="filter-btn" onclick="filterProjects('pending_approval',this)">Pending</button>
+            <button class="filter-btn" onclick="filterProjects('approved',this)">Approved</button>
+            <button class="filter-btn" onclick="filterProjects('active',this)">Active</button>
+            <button class="filter-btn" onclick="filterProjects('done',this)">Done</button>
+        </div>
 
-    <div class="filters">
-        <button class="filter-btn active" onclick="filterProjects('all', this)">All</button>
-        <button class="filter-btn" onclick="filterProjects('draft', this)">Draft</button>
-        <button class="filter-btn" onclick="filterProjects('active', this)">Active</button>
-        <button class="filter-btn" onclick="filterProjects('review', this)">Review</button>
-        <button class="filter-btn" onclick="filterProjects('done', this)">Done</button>
-    </div>
-
-    <div class="projects-grid" id="projects-grid">
-        <div class="empty-state">
-            <div>📋</div>
-            Loading projects...
+        <div class="projects-grid" id="projects-grid">
+            <div class="empty-state"><div class="icon">📋</div>Loading...</div>
         </div>
     </div>
 </div>
 
-<!-- MODAL CREATE -->
+<!-- CREATE MODAL -->
 <div class="modal-overlay" id="modal-create">
-    <div class="modal">
+    <div class="modal modal-wide">
         <div class="modal-title">New Project</div>
         <div class="form-group">
-            <label>Project Name</label>
-            <input type="text" id="p-name" placeholder="My Project">
+            <label>Project Name *</label>
+            <input type="text" id="p-name" placeholder="Ex: E-Commerce Platform v2">
         </div>
         <div class="form-group">
-            <label>Description</label>
-            <textarea id="p-desc" placeholder="What is this project about?"></textarea>
+            <label>Short Description</label>
+            <textarea id="p-desc" placeholder="Brief overview of the project..." style="min-height:60px"></textarea>
+        </div>
+        <div class="form-group">
+            <div class="ai-row">
+                <label style="margin:0">Cahier de Charge (Specifications)</label>
+                <button class="btn-ai" id="btn-generate" onclick="generateCdc()">✨ Generate with AI</button>
+            </div>
+            <div class="ai-hint">Fill the name &amp; description above, then click "Generate with AI" to auto-write specs with Claude.</div>
+            <textarea class="cdc-textarea" id="p-cdc" placeholder="Write detailed specifications here, or use the AI button above to generate them automatically..."></textarea>
         </div>
         <div class="form-group">
             <label>Priority</label>
             <select id="p-priority">
-                <option value="low">Low</option>
-                <option value="medium" selected>Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="low">Low</option><option value="medium" selected>Medium</option>
+                <option value="high">High</option><option value="critical">Critical</option>
             </select>
         </div>
         <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-            <button class="btn-confirm" onclick="createProject()">Create</button>
+            <button class="btn-cancel" onclick="closeCreateModal()">Cancel</button>
+            <button class="btn-confirm" onclick="createProject()">Create Project</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL EDIT -->
-<div class="modal-overlay" id="modal-edit">
-    <div class="modal">
-        <div class="modal-title">Edit Project</div>
-        <input type="hidden" id="edit-id">
+<!-- EDIT CDC MODAL -->
+<div class="modal-overlay" id="modal-cdc">
+    <div class="modal modal-wide">
+        <div class="modal-title">Edit Specifications</div>
+        <input type="hidden" id="cdc-id">
+        <div class="form-group"><label>Project Name</label><input type="text" id="cdc-name"></div>
+        <div class="form-group"><label>Description</label><textarea id="cdc-desc" style="min-height:60px"></textarea></div>
         <div class="form-group">
-            <label>Project Name</label>
-            <input type="text" id="edit-name">
-        </div>
-        <div class="form-group">
-            <label>Description</label>
-            <textarea id="edit-desc"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Status</label>
-            <select id="edit-status">
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="review">Review</option>
-                <option value="done">Done</option>
-                <option value="archived">Archived</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Priority</label>
-            <select id="edit-priority">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-            </select>
+            <div class="ai-row">
+                <label style="margin:0">Cahier de Charge</label>
+                <button class="btn-ai" id="btn-generate-edit" onclick="generateCdcEdit()">✨ Regenerate with AI</button>
+            </div>
+            <textarea class="cdc-textarea" id="cdc-content"></textarea>
         </div>
         <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-            <button class="btn-confirm" onclick="updateProject()">Save</button>
+            <button class="btn-cancel" onclick="closeCdcModal()">Cancel</button>
+            <button class="btn-confirm" onclick="saveCdc()">Save</button>
         </div>
     </div>
 </div>
 
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="modal-reject">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-title">Reject Project</div>
+        <input type="hidden" id="reject-id">
+        <div class="form-group">
+            <label>Rejection Reason *</label>
+            <textarea id="reject-reason" placeholder="Explain what needs to be revised..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+            <button class="btn-confirm" style="background:#ef4444" onclick="confirmReject()">Reject</button>
+        </div>
+    </div>
+</div>
+
+<script src="../scripts/sidebar.js"></script>
 <script>
-    const API = "http://localhost:8000"
-    const token = localStorage.getItem('token')
-    if (!token) window.location.href = 'login.html'
+    const API          = 'http://localhost:8000';
+    const headers      = NexaAuth.headers;
+    const bearerOnly   = NexaAuth.bearerHeaders;
+    const myRole       = NexaAuth.role;
+    let   allProjects  = [];
 
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    // ── Load & render ───────────────────────────────────────────────────────
+    async function loadProjects() {
+        try {
+            const res = await fetch(`${API}/api/projects/`, { headers: bearerOnly });
+            if (!res.ok) throw new Error(res.status);
+            allProjects = await res.json();
+            renderProjects(allProjects);
+            updatePipeline();
+        } catch (e) { showToast('Failed to load projects', 'error'); }
     }
 
-    let allProjects = []
-    let currentFilter = 'all'
-
-    async function loadProjects() {
-        const res = await fetch(`${API}/api/projects/`, { headers })
-        allProjects = await res.json()
-        renderProjects(allProjects)
+    function updatePipeline() {
+        const counts = {};
+        allProjects.forEach(p => counts[p.status] = (counts[p.status]||0)+1);
+        [['draft','pipe-draft'],['pending_approval','pipe-pending'],['approved','pipe-approved'],['active','pipe-active'],['done','pipe-done']].forEach(([s,id]) => {
+            const el = document.getElementById(id);
+            let c = el.querySelector('.pipe-count');
+            if (!c) { c = document.createElement('div'); c.className='pipe-count'; el.appendChild(c); }
+            c.textContent = counts[s] || '';
+        });
     }
 
     function renderProjects(projects) {
-        const grid = document.getElementById('projects-grid')
-        if (projects.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><div>📋</div>No projects found</div>`
-            return
-        }
-        grid.innerHTML = projects.map(p => `
-            <div class="project-card">
-                <div class="pc-header">
-                    <div class="pc-name">${p.name}</div>
-                    <span class="badge badge-${p.status}">${p.status}</span>
-                </div>
-                <div class="pc-desc">${p.description || 'No description'}</div>
-                <span class="badge badge-${p.priority}">${p.priority}</span>
-                <div class="pc-footer">
-                    <div class="pc-date">${new Date(p.created_at).toLocaleDateString()}</div>
-                    <div class="pc-actions">
-                        <button class="btn-icon" onclick="openEditModal('${p.id}')">Edit</button>
-                        <button class="btn-icon danger" onclick="deleteProject('${p.id}')">Delete</button>
-                    </div>
-                </div>
+        const grid = document.getElementById('projects-grid');
+        if (!projects.length) { grid.innerHTML = `<div class="empty-state"><div class="icon">📋</div>No projects found</div>`; return; }
+        grid.innerHTML = projects.map(renderCard).join('');
+    }
+
+    function renderCard(p) {
+        const rej = p.rejection_note ? `<div class="rejection-note">Rejected: ${esc(p.rejection_note)}</div>` : '';
+        const cdc = p.cahier_de_charge
+            ? `<div class="pc-cdc">${esc(p.cahier_de_charge)}</div>`
+            : `<div class="pc-cdc-empty">No specifications yet.</div>`;
+        const cardCls = p.status === 'pending_approval' ? 'pending' : (p.rejection_note && p.status === 'draft' ? 'rejected' : '');
+        return `
+        <div class="project-card ${cardCls}" onclick="location.href='project_detail.html?id=${p.id}'">
+            <div class="pc-header">
+                <div class="pc-name">${esc(p.name)}</div>
+                <span class="badge badge-${p.status}">${p.status.replace('_',' ')}</span>
             </div>
-        `).join('')
+            <div class="pc-desc">${esc(p.description||'No description')}</div>
+            ${rej}${cdc}
+            <span class="badge badge-${p.priority}">${p.priority}</span>
+            <div class="pc-footer" onclick="event.stopPropagation()">
+                <span class="pc-date">${new Date(p.created_at).toLocaleDateString()}</span>
+                <div class="pc-actions">${buildActions(p)}</div>
+            </div>
+        </div>`;
+    }
+
+    function buildActions(p) {
+        const b = [];
+        if (p.status === 'draft') {
+            b.push(`<button class="btn btn-sm" onclick="openCdcModal('${p.id}')">Edit CDC</button>`);
+            b.push(`<button class="btn btn-sm btn-primary" onclick="submitProject('${p.id}')">Submit</button>`);
+        }
+        if (p.status === 'pending_approval' && myRole === 'super_admin') {
+            b.push(`<button class="btn btn-sm btn-success" onclick="approveProject('${p.id}')">Approve</button>`);
+            b.push(`<button class="btn btn-sm btn-danger"  onclick="openRejectModal('${p.id}')">Reject</button>`);
+        }
+        if (p.status === 'approved') {
+            b.push(`<button class="btn btn-sm btn-primary" onclick="startProject('${p.id}',event)">▶ Start</button>`);
+        }
+        b.push(`<button class="btn btn-sm" onclick="location.href='project_detail.html?id=${p.id}'">View</button>`);
+        if (p.status === 'draft') {
+            b.push(`<button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">Delete</button>`);
+        }
+        return b.join('');
     }
 
     function filterProjects(status, btn) {
-        currentFilter = status
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
-        btn.classList.add('active')
-        if (status === 'all') {
-            renderProjects(allProjects)
-        } else {
-            renderProjects(allProjects.filter(p => p.status === status))
-        }
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderProjects(status === 'all' ? allProjects : allProjects.filter(p => p.status === status));
     }
 
-    function openModal() {
-        document.getElementById('modal-create').classList.add('open')
-    }
-
-    function closeModal() {
-        document.getElementById('modal-create').classList.remove('open')
-    }
-
-    function openEditModal(id) {
-        const p = allProjects.find(p => p.id === id)
-        document.getElementById('edit-id').value = p.id
-        document.getElementById('edit-name').value = p.name
-        document.getElementById('edit-desc').value = p.description || ''
-        document.getElementById('edit-status').value = p.status
-        document.getElementById('edit-priority').value = p.priority
-        document.getElementById('modal-edit').classList.add('open')
-    }
-
-    function closeEditModal() {
-        document.getElementById('modal-edit').classList.remove('open')
-    }
+    // ── Create modal ────────────────────────────────────────────────────────
+    function openCreateModal() { document.getElementById('modal-create').classList.add('open'); }
+    function closeCreateModal(){ document.getElementById('modal-create').classList.remove('open'); }
 
     async function createProject() {
-        const res = await fetch(`${API}/api/projects/`, {
-            method: 'POST', headers,
-            body: JSON.stringify({
-                name: document.getElementById('p-name').value,
-                description: document.getElementById('p-desc').value,
-                priority: document.getElementById('p-priority').value
-            })
-        })
-        if (res.ok) { closeModal(); loadProjects() }
+        const name = document.getElementById('p-name').value.trim();
+        if (!name) { showToast('Project name is required', 'error'); return; }
+        try {
+            const res = await fetch(`${API}/api/projects/`, {
+                method:'POST', headers,
+                body: JSON.stringify({ name, description: document.getElementById('p-desc').value, cahier_de_charge: document.getElementById('p-cdc').value, priority: document.getElementById('p-priority').value })
+            });
+            if (res.ok) { closeCreateModal(); showToast('Project created'); loadProjects(); }
+            else { const e = await res.json(); showToast(e.detail||'Error creating project','error'); }
+        } catch { showToast('Server error — is the backend running?','error'); }
     }
 
-    async function updateProject() {
-        const id = document.getElementById('edit-id').value
-        const res = await fetch(`${API}/api/projects/${id}`, {
-            method: 'PUT', headers,
-            body: JSON.stringify({
-                name: document.getElementById('edit-name').value,
-                description: document.getElementById('edit-desc').value,
-                status: document.getElementById('edit-status').value,
-                priority: document.getElementById('edit-priority').value
-            })
-        })
-        if (res.ok) { closeEditModal(); loadProjects() }
+    // ── Generate CDC with AI ────────────────────────────────────────────────
+    async function generateCdc() {
+        const name = document.getElementById('p-name').value.trim();
+        const desc = document.getElementById('p-desc').value.trim();
+        if (!name) { showToast('Enter a project name first', 'error'); return; }
+
+        const btn = document.getElementById('btn-generate');
+        btn.disabled = true; btn.textContent = '⏳ Generating...';
+
+        try {
+            const res = await fetch(`${API}/api/ai/generate-cdc`, {
+                method:'POST', headers,
+                body: JSON.stringify({ name, description: desc })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('p-cdc').value = data.cahier_de_charge;
+                showToast('CDC generated by Claude AI ✨', 'success');
+            } else {
+                const e = await res.json();
+                showToast(e.detail||'AI generation failed','error');
+            }
+        } catch { showToast('AI service unavailable','error'); }
+        finally { btn.disabled = false; btn.textContent = '✨ Generate with AI'; }
+    }
+
+    async function generateCdcEdit() {
+        const name = document.getElementById('cdc-name').value.trim();
+        const desc = document.getElementById('cdc-desc').value.trim();
+        if (!name) { showToast('Project name required', 'error'); return; }
+
+        const btn = document.getElementById('btn-generate-edit');
+        btn.disabled = true; btn.textContent = '⏳ Generating...';
+
+        try {
+            const res = await fetch(`${API}/api/ai/generate-cdc`, {
+                method:'POST', headers,
+                body: JSON.stringify({ name, description: desc })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('cdc-content').value = data.cahier_de_charge;
+                showToast('CDC regenerated ✨', 'success');
+            } else { const e = await res.json(); showToast(e.detail||'Error','error'); }
+        } catch { showToast('AI service unavailable','error'); }
+        finally { btn.disabled = false; btn.textContent = '✨ Regenerate with AI'; }
+    }
+
+    // ── CDC edit modal ──────────────────────────────────────────────────────
+    function openCdcModal(id) {
+        const p = allProjects.find(p => p.id === id);
+        document.getElementById('cdc-id').value      = p.id;
+        document.getElementById('cdc-name').value    = p.name;
+        document.getElementById('cdc-desc').value    = p.description||'';
+        document.getElementById('cdc-content').value = p.cahier_de_charge||'';
+        document.getElementById('modal-cdc').classList.add('open');
+    }
+    function closeCdcModal(){ document.getElementById('modal-cdc').classList.remove('open'); }
+
+    async function saveCdc() {
+        const id = document.getElementById('cdc-id').value;
+        const p  = allProjects.find(p => p.id === id);
+        try {
+            const res = await fetch(`${API}/api/projects/${id}`, {
+                method:'PUT', headers,
+                body: JSON.stringify({ name: document.getElementById('cdc-name').value, description: document.getElementById('cdc-desc').value, cahier_de_charge: document.getElementById('cdc-content').value, priority: p.priority })
+            });
+            if (res.ok) { closeCdcModal(); showToast('Specifications saved'); loadProjects(); }
+            else { const e = await res.json(); showToast(e.detail||'Error','error'); }
+        } catch { showToast('Server error','error'); }
+    }
+
+    // ── Workflow actions ────────────────────────────────────────────────────
+    async function submitProject(id) {
+        const p = allProjects.find(p => p.id === id);
+        if (!p.cahier_de_charge || !p.cahier_de_charge.trim()) {
+            showToast('Please write the Cahier de Charge before submitting', 'error');
+            openCdcModal(id);
+            return;
+        }
+        try {
+            const res = await fetch(`${API}/api/projects/${id}/submit`, {
+                method:'POST', headers: bearerOnly
+            });
+            if (res.ok) { showToast('Submitted for approval'); loadProjects(); }
+            else { const e = await res.json(); showToast(e.detail||'Submit failed','error'); }
+        } catch { showToast('Server error — is the backend running?','error'); }
+    }
+
+    async function approveProject(id) {
+        try {
+            const res = await fetch(`${API}/api/projects/${id}/approve`, {
+                method:'POST', headers: bearerOnly
+            });
+            if (res.ok) { showToast('Project approved ✓', 'success'); loadProjects(); }
+            else { const e = await res.json(); showToast(e.detail||'Error','error'); }
+        } catch { showToast('Server error','error'); }
+    }
+
+    function openRejectModal(id) {
+        document.getElementById('reject-id').value     = id;
+        document.getElementById('reject-reason').value = '';
+        document.getElementById('modal-reject').classList.add('open');
+    }
+    function closeRejectModal(){ document.getElementById('modal-reject').classList.remove('open'); }
+
+    async function confirmReject() {
+        const id     = document.getElementById('reject-id').value;
+        const reason = document.getElementById('reject-reason').value.trim();
+        if (!reason) { showToast('Rejection reason required', 'error'); return; }
+        try {
+            const res = await fetch(`${API}/api/projects/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+                method:'POST', headers: bearerOnly
+            });
+            if (res.ok) { closeRejectModal(); showToast('Project rejected'); loadProjects(); }
+            else { const e = await res.json(); showToast(e.detail||'Error','error'); }
+        } catch { showToast('Server error','error'); }
+    }
+
+    async function startProject(id, evt) {
+        const btn = evt.target;
+        btn.disabled = true; btn.textContent = 'Starting...';
+        try {
+            const res = await fetch(`${API}/api/projects/${id}/start`, {
+                method:'POST', headers: bearerOnly
+            });
+            if (res.ok) { showToast('Project started! CDC Agent is generating tasks...', 'success'); loadProjects(); }
+            else { const e = await res.json(); showToast(e.detail||'Error','error'); btn.disabled=false; btn.textContent='▶ Start'; }
+        } catch { showToast('Server error','error'); btn.disabled=false; btn.textContent='▶ Start'; }
     }
 
     async function deleteProject(id) {
-        if (!confirm('Delete this project?')) return
-        await fetch(`${API}/api/projects/${id}`, { method: 'DELETE', headers })
-        loadProjects()
+        if (!confirm('Delete this project?')) return;
+        await fetch(`${API}/api/projects/${id}`, { method:'DELETE', headers: bearerOnly });
+        showToast('Project deleted'); loadProjects();
     }
 
-    // WebSocket
-    const ws = new WebSocket("ws://localhost:8000/ws/dashboard")
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-        if (data.type === "task_updated") loadProjects()
-    }
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    loadProjects()
+    // WebSocket live updates
+    const ws = new WebSocket('ws://localhost:8000/ws/dashboard');
+    ws.onmessage = e => {
+        const m = JSON.parse(e.data);
+        if (['project_submitted','project_approved','project_rejected','project_started'].includes(m.type)) loadProjects();
+    };
+
+    loadProjects();
 </script>
 </body>
 </html>

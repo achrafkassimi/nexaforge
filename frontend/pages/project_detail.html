@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaForge — Project Detail</title>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <style>
+        .project-title { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+        .project-meta  { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .card-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+        .workflow { display: flex; flex-direction: column; gap: 0; }
+        .wf-step { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .wf-step:last-child { border-bottom: none; }
+        .wf-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 2px; }
+        .wf-icon.done-step   { background: rgba(52,211,153,0.2);  color: #34d399; }
+        .wf-icon.active-step { background: rgba(139,92,246,0.2);  color: #a78bfa; }
+        .wf-icon.pending     { background: rgba(100,116,139,0.15); color: #64748b; }
+        .wf-content { flex: 1; }
+        .wf-label { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+        .wf-desc  { font-size: 12px; color: var(--muted); }
+
+        .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+
+        .cdc-content { font-size: 13px; line-height: 1.8; white-space: pre-wrap; color: var(--text); }
+        .cdc-empty   { color: var(--muted); font-style: italic; font-size: 13px; }
+
+        .rejection-box { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #f87171; margin-bottom: 16px; }
+
+        .sprint-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .sprint-name   { font-size: 14px; font-weight: 600; }
+        .sprint-dates  { font-size: 12px; color: var(--muted); }
+
+        .task-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); margin-bottom: 6px; cursor: pointer; transition: border-color 0.15s; }
+        .task-item:hover { border-color: var(--purple); }
+        .task-item.subtask { margin-left: 24px; border-style: dashed; }
+        .task-title-text { flex: 1; font-size: 13px; }
+        .task-pts  { font-size: 11px; color: var(--muted); }
+        .task-empty { color: var(--muted); font-size: 13px; font-style: italic; padding: 12px 0; }
+
+        /* File tree */
+        .file-tree { display: flex; flex-direction: column; gap: 2px; }
+        .file-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background 0.15s; font-size: 13px; }
+        .file-row:hover { background: rgba(139,92,246,0.08); }
+        .file-row.dir { color: var(--muted); cursor: default; font-weight: 600; font-size: 12px; margin-top: 8px; }
+        .file-row.dir:first-child { margin-top: 0; }
+        .file-icon { font-size: 13px; flex-shrink: 0; }
+        .file-name { flex: 1; }
+        .file-size { font-size: 11px; color: var(--muted); }
+
+        /* File viewer modal */
+        .modal-wide { max-width: 800px !important; }
+        .file-viewer { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow: auto; max-height: 60vh; }
+        .file-viewer pre { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: var(--text); margin: 0; }
+        .file-path-label { font-size: 12px; color: var(--muted); font-family: monospace; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <div id="app-sidebar"></div>
+    <div class="main">
+        <div class="breadcrumb">
+            <a href="projects.html">Projects</a> / <span id="bc-name">Loading...</span>
+        </div>
+
+        <div class="project-title" id="project-title">Loading...</div>
+        <div class="project-meta" id="project-meta"></div>
+
+        <div class="action-row" id="action-row"></div>
+
+        <div class="grid-2">
+            <!-- LEFT -->
+            <div>
+                <div id="rejection-box" style="display:none"></div>
+
+                <div class="card">
+                    <div class="card-title">Cahier de Charge — Specifications</div>
+                    <div id="cdc-content" class="cdc-empty">No specifications written yet.</div>
+                </div>
+
+                <div class="card" id="sprints-card">
+                    <div class="card-title">Sprint &amp; Tasks</div>
+                    <div id="sprints-content"><span style="color:var(--muted);font-size:13px">No sprints yet.</span></div>
+                </div>
+
+                <div class="card" id="files-card" style="display:none">
+                    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Project Files</span>
+                        <button class="btn btn-sm" onclick="loadFiles()" style="padding:4px 10px;font-size:11px">Refresh</button>
+                    </div>
+                    <div class="file-tree" id="file-tree">
+                        <span style="color:var(--muted);font-size:13px">No files yet — agents will generate them.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div>
+                <div class="card">
+                    <div class="card-title">Project Info</div>
+                    <div class="info-row"><span class="info-label">Status</span><span class="info-value" id="info-status">—</span></div>
+                    <div class="info-row"><span class="info-label">Priority</span><span class="info-value" id="info-priority">—</span></div>
+                    <div class="info-row"><span class="info-label">Deadline</span><span class="info-value" id="info-deadline">—</span></div>
+                    <div class="info-row"><span class="info-label">Created</span><span class="info-value" id="info-created">—</span></div>
+                    <div class="info-row"><span class="info-label">Total Tasks</span><span class="info-value" id="info-total-tasks">—</span></div>
+                    <div class="info-row"><span class="info-label">Completed</span><span class="info-value" id="info-done-tasks">—</span></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Progress</div>
+                    <div id="progress-label" style="font-size:13px;color:var(--muted);margin-bottom:6px">0 / 0 tasks done</div>
+                    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Workflow</div>
+                    <div class="workflow">
+                        <div class="wf-step" id="wf-draft">
+                            <div class="wf-icon pending">1</div>
+                            <div class="wf-content"><div class="wf-label">Draft</div><div class="wf-desc">Write the cahier de charge</div></div>
+                        </div>
+                        <div class="wf-step" id="wf-pending">
+                            <div class="wf-icon pending">2</div>
+                            <div class="wf-content"><div class="wf-label">Pending Approval</div><div class="wf-desc">Super admin reviews specs</div></div>
+                        </div>
+                        <div class="wf-step" id="wf-approved">
+                            <div class="wf-icon pending">3</div>
+                            <div class="wf-content"><div class="wf-label">Approved</div><div class="wf-desc">Ready to start</div></div>
+                        </div>
+                        <div class="wf-step" id="wf-active">
+                            <div class="wf-icon pending">4</div>
+                            <div class="wf-content"><div class="wf-label">Active</div><div class="wf-desc">CDC Agent generates tasks, agents work</div></div>
+                        </div>
+                        <div class="wf-step" id="wf-done">
+                            <div class="wf-icon pending">5</div>
+                            <div class="wf-content"><div class="wf-label">Done</div><div class="wf-desc">Project delivered</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File viewer modal -->
+<div class="modal-overlay" id="modal-file">
+    <div class="modal modal-wide">
+        <div class="modal-title" id="file-modal-title">File</div>
+        <div class="file-path-label" id="file-path-label"></div>
+        <div class="file-viewer">
+            <pre id="file-content">Loading...</pre>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('modal-file').classList.remove('open')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject modal -->
+<div class="modal-overlay" id="modal-reject">
+    <div class="modal">
+        <div class="modal-title">Reject Project</div>
+        <div class="form-group">
+            <label>Rejection Reason *</label>
+            <textarea id="reject-reason" placeholder="Explain what needs to be revised..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmReject()">Reject</button>
+        </div>
+    </div>
+</div>
+
+<script src="../scripts/sidebar.js"></script>
+<script>
+    const API       = 'http://localhost:8000';
+    const headers   = NexaAuth.headers;
+    const myRole    = NexaAuth.role;
+
+    const params    = new URLSearchParams(location.search);
+    const projectId = params.get('id');
+    if (!projectId) location.href = 'projects.html';
+
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function load() {
+        const [projRes, sprintsRes, tasksRes] = await Promise.all([
+            fetch(`${API}/api/projects/${projectId}`, { headers }),
+            fetch(`${API}/api/sprints/`, { headers }),
+            fetch(`${API}/api/tasks/`, { headers })
+        ]);
+
+        if (!projRes.ok) { location.href = 'projects.html'; return; }
+
+        const project = await projRes.json();
+        const sprints = (await sprintsRes.json()).filter(s => s.project_id === projectId);
+        const tasks   = (await tasksRes.json()).filter(t => sprints.some(s => s.id === t.sprint_id));
+
+        renderHeader(project);
+        renderActions(project);
+        renderCdc(project);
+        renderWorkflow(project.status);
+        renderSprints(sprints, tasks);
+        renderInfo(project, tasks);
+    }
+
+    function renderHeader(p) {
+        document.title = `NexaForge — ${p.name}`;
+        document.getElementById('bc-name').textContent = p.name;
+        document.getElementById('project-title').textContent = p.name;
+        document.getElementById('project-meta').innerHTML = `
+            <span class="badge badge-${p.status}">${p.status.replace('_',' ')}</span>
+            <span class="badge badge-${p.priority}">${p.priority}</span>
+        `;
+    }
+
+    function renderActions(p) {
+        const row = document.getElementById('action-row');
+        const btns = [];
+
+        if (p.status === 'draft') {
+            btns.push(`<button class="btn btn-primary" onclick="doSubmit()">Submit for Approval</button>`);
+        }
+        if (p.status === 'pending_approval' && myRole === 'super_admin') {
+            btns.push(`<button class="btn btn-success" onclick="doApprove()">Approve</button>`);
+            btns.push(`<button class="btn btn-danger"  onclick="document.getElementById('modal-reject').classList.add('open')">Reject</button>`);
+        }
+        if (p.status === 'approved') {
+            btns.push(`<button class="btn btn-primary" id="btn-start" onclick="doStart()">&#9654; Start Project</button>`);
+        }
+        if (p.status !== 'draft') {
+            btns.push(`<a href="sprint_burndown.html" class="btn">View Burndown</a>`);
+        }
+
+        row.innerHTML = btns.join('');
+
+        const rejBox = document.getElementById('rejection-box');
+        if (p.rejection_note) {
+            rejBox.style.display = 'block';
+            rejBox.innerHTML = `<div class="rejection-box">Rejected by admin: ${esc(p.rejection_note)}</div>`;
+        }
+    }
+
+    function renderCdc(p) {
+        const el = document.getElementById('cdc-content');
+        if (p.cahier_de_charge) {
+            el.className = 'cdc-content';
+            el.textContent = p.cahier_de_charge;
+        } else {
+            el.className = 'cdc-empty';
+            el.textContent = 'No specifications written yet. Go to Projects → Edit CDC.';
+        }
+    }
+
+    function renderWorkflow(status) {
+        const steps = ['draft','pending_approval','approved','active','done'];
+        const ids   = ['wf-draft','wf-pending','wf-approved','wf-active','wf-done'];
+        const idx   = steps.indexOf(status);
+
+        ids.forEach((id, i) => {
+            const icon = document.querySelector(`#${id} .wf-icon`);
+            if (i < idx)      { icon.className = 'wf-icon done-step'; icon.textContent = '✓'; }
+            else if (i === idx){ icon.className = 'wf-icon active-step'; }
+            else               { icon.className = 'wf-icon pending'; }
+        });
+    }
+
+    function renderSprints(sprints, tasks) {
+        const el = document.getElementById('sprints-content');
+        if (!sprints.length) {
+            el.innerHTML = '<span style="color:var(--muted);font-size:13px">No sprints yet. Start the project to create Sprint 1.</span>';
+            return;
+        }
+
+        el.innerHTML = sprints.map(sprint => {
+            const sprintTasks = tasks.filter(t => t.sprint_id === sprint.id && !t.parent_task_id);
+            const rows = sprintTasks.map(task => {
+                const subtasks = tasks.filter(t => t.parent_task_id === task.id);
+                const subHtml = subtasks.map(st => `
+                    <div class="task-item subtask" onclick="location.href='task_detail.html?id=${st.id}'">
+                        <span class="badge badge-${st.status}" style="flex-shrink:0">${st.status.replace('_',' ')}</span>
+                        <span class="task-title-text">${esc(st.title)}</span>
+                        <span class="task-pts">${st.story_points}pt</span>
+                    </div>
+                `).join('');
+                return `
+                    <div class="task-item" onclick="location.href='task_detail.html?id=${task.id}'">
+                        <span class="badge badge-${task.status}" style="flex-shrink:0">${task.status.replace('_',' ')}</span>
+                        <span class="task-title-text">${esc(task.title)}</span>
+                        <span class="task-pts">${task.story_points}pt</span>
+                    </div>
+                    ${subHtml}
+                `;
+            }).join('');
+
+            return `
+                <div class="sprint-header">
+                    <div>
+                        <div class="sprint-name">${esc(sprint.name)}</div>
+                        <div class="sprint-dates"><span class="badge badge-${sprint.status}">${sprint.status}</span></div>
+                    </div>
+                    <a href="sprint_burndown.html" style="font-size:12px;color:var(--purple2)">Burndown →</a>
+                </div>
+                ${rows || '<div class="task-empty">No tasks yet — CDC Agent will generate them when the project starts.</div>'}
+            `;
+        }).join('<hr style="border:none;border-top:1px solid var(--border);margin:20px 0">');
+    }
+
+    function renderInfo(p, tasks) {
+        const total = tasks.length;
+        const done  = tasks.filter(t => t.status === 'done').length;
+        const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+
+        document.getElementById('info-status').innerHTML    = `<span class="badge badge-${p.status}">${p.status.replace('_',' ')}</span>`;
+        document.getElementById('info-priority').textContent = p.priority;
+        document.getElementById('info-deadline').textContent = p.deadline ? new Date(p.deadline).toLocaleDateString() : '—';
+        document.getElementById('info-created').textContent  = new Date(p.created_at).toLocaleDateString();
+        document.getElementById('info-total-tasks').textContent = total;
+        document.getElementById('info-done-tasks').textContent  = done;
+
+        document.getElementById('progress-label').textContent = `${done} / ${total} tasks done (${pct}%)`;
+        document.getElementById('progress-fill').style.width  = `${pct}%`;
+    }
+
+    async function doSubmit() {
+        try {
+            const res = await fetch(`${API}/api/projects/${projectId}/submit`, { method:'POST', headers: NexaAuth.bearerHeaders });
+            if (res.ok) { showToast('Submitted for approval'); load(); }
+            else { const e = await res.json(); showToast(e.detail || 'Error', 'error'); }
+        } catch { showToast('Cannot reach server', 'error'); }
+    }
+
+    async function doApprove() {
+        try {
+            const res = await fetch(`${API}/api/projects/${projectId}/approve`, { method:'POST', headers: NexaAuth.bearerHeaders });
+            if (res.ok) { showToast('Project approved'); load(); }
+            else { const e = await res.json(); showToast(e.detail || 'Error', 'error'); }
+        } catch { showToast('Cannot reach server', 'error'); }
+    }
+
+    function closeRejectModal() { document.getElementById('modal-reject').classList.remove('open'); }
+
+    async function confirmReject() {
+        const reason = document.getElementById('reject-reason').value.trim();
+        if (!reason) { showToast('Reason required', 'error'); return; }
+        try {
+            const res = await fetch(`${API}/api/projects/${projectId}/reject?reason=${encodeURIComponent(reason)}`, { method:'POST', headers: NexaAuth.bearerHeaders });
+            if (res.ok) { closeRejectModal(); showToast('Project rejected'); load(); }
+            else { const e = await res.json(); showToast(e.detail || 'Error', 'error'); }
+        } catch { showToast('Cannot reach server', 'error'); }
+    }
+
+    async function doStart() {
+        const btn = document.getElementById('btn-start');
+        if (btn) { btn.disabled = true; btn.textContent = 'Starting...'; }
+        try {
+            const res = await fetch(`${API}/api/projects/${projectId}/start`, { method:'POST', headers: NexaAuth.bearerHeaders });
+            if (res.ok) {
+                showToast('Project started! Sprint 1 created. CDC Agent is generating tasks...');
+                load();
+            } else {
+                const e = await res.json();
+                showToast(e.detail || 'Error', 'error');
+                if (btn) { btn.disabled = false; btn.textContent = '▶ Start Project'; }
+            }
+        } catch {
+            showToast('Cannot reach server', 'error');
+            if (btn) { btn.disabled = false; btn.textContent = '▶ Start Project'; }
+        }
+    }
+
+    // ── File tree ────────────────────────────────────────────────────────────
+    let currentProjectName = '';
+
+    async function loadFiles() {
+        if (!currentProjectName) return;
+        const res = await fetch(
+            `${API}/api/files/${projectId}?project_name=${encodeURIComponent(currentProjectName)}`,
+            { headers: NexaAuth.bearerHeaders }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const card = document.getElementById('files-card');
+        const tree = document.getElementById('file-tree');
+
+        if (!data.exists || !data.files.length) {
+            card.style.display = 'block';
+            tree.innerHTML = '<span style="color:var(--muted);font-size:13px">Workspace created — agents will generate files as they complete tasks.</span>';
+            return;
+        }
+
+        card.style.display = 'block';
+
+        const FILE_ICONS = { '.py': '🐍', '.html': '🌐', '.css': '🎨', '.js': '📜', '.yml': '⚙️', '.yaml': '⚙️', '.md': '📄', '.json': '📋', '.sql': '🗄️', '.sh': '📟' };
+
+        // Group by directory
+        const dirs = {};
+        data.files.forEach(f => {
+            if (f.type === 'dir') return;
+            const parts = f.path.split('/');
+            const dir   = parts.length > 1 ? parts[0] : '';
+            if (!dirs[dir]) dirs[dir] = [];
+            dirs[dir].push(f);
+        });
+
+        let html = '';
+        Object.keys(dirs).sort().forEach(dir => {
+            if (dir) html += `<div class="file-row dir">📁 ${dir}/</div>`;
+            dirs[dir].forEach(f => {
+                const icon = FILE_ICONS[f.ext] || '📄';
+                const indent = dir ? 'padding-left:20px' : '';
+                html += `
+                    <div class="file-row" style="${indent}" onclick="openFile('${f.path}', '${esc(f.name)}')">
+                        <span class="file-icon">${icon}</span>
+                        <span class="file-name">${esc(f.name)}</span>
+                        <span class="file-size">${formatBytes(f.size)}</span>
+                    </div>`;
+            });
+        });
+        tree.innerHTML = html;
+    }
+
+    async function openFile(path, name) {
+        document.getElementById('modal-file').classList.add('open');
+        document.getElementById('file-modal-title').textContent = name;
+        document.getElementById('file-path-label').textContent  = path;
+        document.getElementById('file-content').textContent     = 'Loading...';
+
+        const res = await fetch(
+            `${API}/api/files/${projectId}/content?project_name=${encodeURIComponent(currentProjectName)}&path=${encodeURIComponent(path)}`,
+            { headers: NexaAuth.bearerHeaders }
+        );
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('file-content').textContent = data.content || '(empty file)';
+        } else {
+            document.getElementById('file-content').textContent = 'Could not read file.';
+        }
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // Patch load() to capture project name and load files
+    const _origLoad = load;
+    async function load() {
+        const [projRes, sprintsRes, tasksRes] = await Promise.all([
+            fetch(`${API}/api/projects/${projectId}`, { headers }),
+            fetch(`${API}/api/sprints/`, { headers }),
+            fetch(`${API}/api/tasks/`, { headers })
+        ]);
+        if (!projRes.ok) { location.href = 'projects.html'; return; }
+        const project = await projRes.json();
+        const sprints = (await sprintsRes.json()).filter(s => s.project_id === projectId);
+        const tasks   = (await tasksRes.json()).filter(t => sprints.some(s => s.id === t.sprint_id));
+
+        currentProjectName = project.name;
+        renderHeader(project);
+        renderActions(project);
+        renderCdc(project);
+        renderWorkflow(project.status);
+        renderSprints(sprints, tasks);
+        renderInfo(project, tasks);
+
+        if (project.status === 'active' || project.status === 'done') {
+            loadFiles();
+        }
+    }
+
+    const ws = new WebSocket('ws://localhost:8000/ws/dashboard');
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if (['project_submitted','project_approved','project_rejected','project_started','task_updated'].includes(msg.type)) {
+            load();
+        }
+    };
+
+    load();
+</script>
+</body>
+</html>

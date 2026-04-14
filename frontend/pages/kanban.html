@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaForge — Kanban Board</title>
+    <link rel="stylesheet" href="../styles/globals.css">
+    <style>
+        .kanban-toolbar {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 24px; flex-wrap: wrap;
+        }
+        .kanban-toolbar select {
+            background: var(--bg2); border: 1px solid var(--border);
+            color: var(--text); border-radius: 8px; padding: 8px 14px;
+            font-size: 13px; cursor: pointer;
+        }
+        .kanban-toolbar select:focus { outline: none; border-color: var(--purple); }
+
+        .board {
+            display: flex; gap: 14px;
+            overflow-x: auto; padding-bottom: 16px;
+            align-items: flex-start;
+        }
+
+        .column {
+            flex-shrink: 0; width: 240px;
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+        }
+
+        .col-header {
+            padding: 14px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .col-title {
+            font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .col-count {
+            font-size: 11px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 100px;
+            padding: 2px 8px; color: var(--muted);
+        }
+
+        /* Column accent colors */
+        .col-backlog    .col-header { border-top: 3px solid #64748b; }
+        .col-todo       .col-header { border-top: 3px solid #60a5fa; }
+        .col-in_progress .col-header { border-top: 3px solid #fbbf24; }
+        .col-peer_review .col-header { border-top: 3px solid #a78bfa; }
+        .col-final_review .col-header { border-top: 3px solid #f472b6; }
+        .col-done       .col-header { border-top: 3px solid #34d399; }
+
+        .col-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+
+        .task-card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px;
+            cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+        }
+        .task-card:hover { border-color: var(--purple); transform: translateY(-1px); }
+
+        .card-title { font-size: 13px; font-weight: 500; margin-bottom: 10px; line-height: 1.4; }
+
+        .card-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 8px; border-top: 1px solid var(--border);
+            font-size: 11px; color: var(--muted);
+        }
+
+        .agent-dot {
+            width: 20px; height: 20px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        .av-backend  { background: #8b5cf6; }
+        .av-frontend { background: #06b6d4; }
+        .av-database { background: #f59e0b; }
+        .av-devops   { background: #10b981; }
+        .av-unknown  { background: #64748b; }
+
+        .pts-badge {
+            font-size: 11px; color: var(--muted);
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 6px; padding: 2px 6px;
+        }
+
+        .empty-col {
+            text-align: center; padding: 20px 10px;
+            color: var(--muted); font-size: 12px;
+        }
+
+        .board-stats {
+            display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .board-stat {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 18px;
+            font-size: 13px; color: var(--muted);
+        }
+        .board-stat strong { color: var(--text); font-size: 18px; display: block; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <div id="app-sidebar"></div>
+    <div class="main">
+        <div class="page-header">
+            <div class="page-title">Kanban Board</div>
+        </div>
+
+        <div class="kanban-toolbar">
+            <select id="filter-project" onchange="applyFilters()">
+                <option value="">All Projects</option>
+            </select>
+            <select id="filter-sprint" onchange="applyFilters()">
+                <option value="">All Sprints</option>
+            </select>
+            <select id="filter-agent" onchange="applyFilters()">
+                <option value="">All Agent Types</option>
+                <option value="backend">Backend</option>
+                <option value="frontend">Frontend</option>
+                <option value="database">Database</option>
+                <option value="devops">DevOps</option>
+            </select>
+        </div>
+
+        <div class="board-stats" id="board-stats"></div>
+
+        <div class="board" id="kanban-board">
+            <div style="color:var(--muted);font-size:13px;padding:20px">Loading tasks...</div>
+        </div>
+    </div>
+</div>
+
+<script src="../scripts/sidebar.js"></script>
+<script>
+    const API     = 'http://localhost:8000';
+    const headers = NexaAuth.headers;
+
+    const COLUMNS = [
+        { key: 'backlog',      label: 'Backlog' },
+        { key: 'todo',         label: 'Todo' },
+        { key: 'in_progress',  label: 'In Progress' },
+        { key: 'peer_review',  label: 'Peer Review' },
+        { key: 'final_review', label: 'Final Review' },
+        { key: 'done',         label: 'Done' },
+    ];
+
+    const AGENT_ICONS = { backend: 'BE', frontend: 'FE', database: 'DB', devops: 'DO' };
+
+    let allTasks    = [];
+    let allSprints  = [];
+    let allProjects = [];
+
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function loadAll() {
+        const [tasksRes, sprintsRes, projectsRes] = await Promise.all([
+            fetch(`${API}/api/tasks/`,    { headers }),
+            fetch(`${API}/api/sprints/`,  { headers }),
+            fetch(`${API}/api/projects/`, { headers }),
+        ]);
+        allTasks    = await tasksRes.json();
+        allSprints  = await sprintsRes.json();
+        allProjects = await projectsRes.json();
+
+        populateFilters();
+        renderBoard(allTasks);
+    }
+
+    function populateFilters() {
+        const pSel = document.getElementById('filter-project');
+        allProjects.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id; opt.textContent = p.name;
+            pSel.appendChild(opt);
+        });
+
+        const sSel = document.getElementById('filter-sprint');
+        allSprints.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id; opt.textContent = `${s.name} (${s.status})`;
+            sSel.appendChild(opt);
+        });
+    }
+
+    function applyFilters() {
+        const projectId = document.getElementById('filter-project').value;
+        const sprintId  = document.getElementById('filter-sprint').value;
+        const agentType = document.getElementById('filter-agent').value;
+
+        let tasks = allTasks;
+
+        if (projectId) {
+            const projectSprints = allSprints.filter(s => s.project_id === projectId).map(s => s.id);
+            tasks = tasks.filter(t => projectSprints.includes(t.sprint_id));
+        }
+        if (sprintId)  tasks = tasks.filter(t => t.sprint_id === sprintId);
+        if (agentType) tasks = tasks.filter(t => t.agent_type === agentType);
+
+        renderBoard(tasks);
+    }
+
+    function renderBoard(tasks) {
+        const board = document.getElementById('kanban-board');
+
+        // Stats
+        const total    = tasks.length;
+        const done     = tasks.filter(t => t.status === 'done').length;
+        const inProg   = tasks.filter(t => t.status === 'in_progress').length;
+        const blocked  = tasks.filter(t => t.status === 'backlog').length;
+        const totalPts = tasks.reduce((s, t) => s + (t.story_points || 0), 0);
+        const donePts  = tasks.filter(t => t.status === 'done').reduce((s, t) => s + (t.story_points || 0), 0);
+
+        document.getElementById('board-stats').innerHTML = `
+            <div class="board-stat"><strong>${total}</strong>Total Tasks</div>
+            <div class="board-stat"><strong style="color:#fbbf24">${inProg}</strong>In Progress</div>
+            <div class="board-stat"><strong style="color:#34d399">${done}</strong>Done</div>
+            <div class="board-stat"><strong style="color:#a78bfa">${donePts}/${totalPts}</strong>Points Done</div>
+        `;
+
+        board.innerHTML = COLUMNS.map(col => {
+            const colTasks = tasks.filter(t => t.status === col.key);
+            const cards = colTasks.map(task => {
+                const agentType  = task.agent_type || 'unknown';
+                const agentIcon  = AGENT_ICONS[agentType] || '??';
+                const agentClass = `av-${agentType}`;
+                return `
+                    <div class="task-card" onclick="location.href='task_detail.html?id=${task.id}'">
+                        <div class="card-title">${esc(task.title)}</div>
+                        <div class="card-meta">
+                            <span class="badge badge-${task.priority}">${task.priority}</span>
+                            ${task.parent_task_id ? '<span class="badge" style="background:rgba(100,116,139,0.2);color:#94a3b8">subtask</span>' : ''}
+                        </div>
+                        <div class="card-footer">
+                            <div class="agent-dot ${agentClass}" title="${agentType}">${agentIcon}</div>
+                            <span class="pts-badge">${task.story_points} pts</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="column col-${col.key}">
+                    <div class="col-header">
+                        <span class="col-title">${col.label}</span>
+                        <span class="col-count">${colTasks.length}</span>
+                    </div>
+                    <div class="col-cards">
+                        ${cards || '<div class="empty-col">No tasks</div>'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // WebSocket live updates
+    const ws = new WebSocket('ws://localhost:8000/ws/dashboard');
+    ws.onmessage = () => loadAll();
+
+    loadAll();
+    setInterval(loadAll, 15000);
+</script>
+</body>
+</html>

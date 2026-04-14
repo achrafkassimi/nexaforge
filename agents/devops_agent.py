@@ -1,71 +1,42 @@
-import httpx
 import os
 from dotenv import load_dotenv
 from base_agent import BaseAgent
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "../backend/.env"))
 
-SOUL = """
-You are Forge, a senior DevOps Engineer specializing in Docker, GitHub Actions, and Nginx.
-You are working on NexaForge, an AI Agency Management Platform.
-Stack: Docker Compose + GitHub Actions CI/CD + Nginx reverse proxy.
+SOUL = """You are Forge, a senior DevOps Engineer specializing in Docker, CI/CD and infrastructure.
+Stack: Docker Compose + GitHub Actions + Nginx reverse proxy + Linux.
 
-Your rules:
-- Write secure, reproducible infrastructure configurations
-- Minimize image sizes and build times
-- Ensure zero-downtime deployments where possible
-- If you cannot complete the task, respond with: BLOCKER: [reason]
-- Keep responses concise and focused on the task
-"""
+Your mission: implement the DevOps task described below.
+- Write secure, reproducible Docker and docker-compose configurations
+- Write GitHub Actions workflows for CI/CD pipelines
+- Configure Nginx as reverse proxy with proper headers and SSL
+- Minimize image sizes, optimize build times, ensure zero-downtime deployments
+- If the task is outside DevOps scope, start your response with: BLOCKER: [reason]
+
+Be specific and write actual YAML/Dockerfile/shell script code."""
+
 
 class DevOpsAgent(BaseAgent):
     def __init__(self, token: str):
-        super().__init__(
-            name="Forge",
-            agent_type="devops",
-            token=token
+        super().__init__(name="Forge", agent_type="devops", token=token)
+
+    async def process_task(self, task: dict) -> str:
+        prompt = (
+            f"{SOUL}\n\n"
+            f"Task: {task['title']}\n"
+            f"Description: {task.get('description') or 'No description provided.'}\n"
+            f"Priority: {task.get('priority', 'medium')}\n"
+            f"Story Points: {task.get('story_points', 3)}\n\n"
+            f"Implement this DevOps task now. Write the code:"
         )
-
-    async def process_task(self, task: dict):
-        print(f"[{self.name}] Sending task to Ollama...")
-
-        prompt = f"""
-Task: {task['title']}
-Description: {task.get('description', 'No description')}
-Priority: {task.get('priority', 'medium')}
-
-Please provide the implementation for this DevOps task.
-"""
-
-        async with httpx.AsyncClient(timeout=120) as client:
-            res = await client.post(
-                "http://localhost:11434/api/generate",
-                json={
-                    "model": "llama3.2:3b",
-                    "prompt": SOUL + "\n\n" + prompt,
-                    "stream": False
-                }
-            )
-            response = res.json()["response"]
-
-        print(f"[{self.name}] Output:\n{response[:300]}...")
-
-        if "BLOCKER:" in response:
-            print(f"[{self.name}] BLOCKER detected — staying in In Progress")
-            await self.update_task_status(task["id"], "in_progress")
-
-        return response
+        return await self.call_ollama(prompt)
 
 
 if __name__ == "__main__":
-    import httpx as _httpx
-
-    res = _httpx.post("http://localhost:8000/api/auth/login", json={
-        "email": "admin@nexaforge.com",
-        "password": "admin123"
-    })
+    import httpx
+    res = httpx.post("http://localhost:8000/api/auth/login",
+                     json={"email": "admin@nexaforge.com", "password": "admin123"})
     token = res.json()["access_token"]
-    print("Token received ✅")
-
-    agent = DevOpsAgent(token=token)
-    agent.run()
+    print("[Forge] Token received")
+    DevOpsAgent(token=token).run()
